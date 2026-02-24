@@ -1,22 +1,22 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
-  "summary": "Left2Lift — a full-stack AI-powered food redistribution platform connecting hotels/restaurants with NGOs to reduce food waste. Built with React + TypeScript + Tailwind CSS frontend, Motoko on Internet Computer backend, and Internet Identity for auth. Supports three roles: Hotel, NGO, and Admin. Features rule-based spoilage prediction, NGO matching logic, dashboards, feedback system, and admin analytics with a green/orange design.",
+  "projectStateVersion": 5,
+  "summary": "From Waste to Plate – Maharashtra Edition — a hackathon-level AI-powered food redistribution platform focused on Maharashtra cities (Mumbai, Pune, Nagpur, Nashik, Aurangabad, Kolhapur). Connects restaurants, hostels, event organizers, and households with verified NGOs, local trusts, and volunteer drivers. Built with React + Tailwind CSS + Framer Motion frontend, Firebase/Supabase backend, OpenAI API for spoilage prediction and AI summaries, Google Maps API for route optimization, and Web Speech API for voice input. Features: AI food safety engine with Maharashtra climate factor, Haversine-based nearest NGO finder with urgency scoring, route optimization, volunteer smart assignment, real Maharashtra demo data, glassmorphism design with animations, multi-language support (English/Hindi/Marathi), dark mode, emergency mode, impact dashboard with animated charts, donor leaderboard, and admin analytics.",
   "architectural_notes": [
-    "Tech stack: React + TypeScript + Tailwind CSS frontend, Motoko backend on Internet Computer, Internet Identity auth",
-    "Three roles only: Hotel, NGO, Admin — no volunteer or delivery role anywhere",
-    "All location fields are plain text strings — no lat/lng inputs, no Google Maps API",
-    "All AI logic (spoilage prediction, NGO matching) is pure Motoko — no external API calls",
     "Donation record stores matched NGO principal ID; NGO panel filters by that principal",
     "Spoilage thresholds: Refrigerated=24h, RoomTemperature=6h, Hot=4h; lower for perishable types",
     "NGO matching scores by food type preference match (weight 2x) + available capacity ratio",
     "Status changes (by admin or NGO) are stored on the single donation record visible to all roles",
-    "Login screen must be fully static — no CSS transitions or keyframe animations",
-    "Design uses greens and oranges only — no blue or purple"
+    "Design uses greens and oranges only — no blue or purple",
+    "New tech stack: React + Tailwind CSS + Framer Motion frontend, Firebase/Supabase backend, OpenAI API for AI logic, Google Maps API for routing, Web Speech API for voice input",
+    "Geolocation uses real lat/lng coordinates and Haversine formula for NGO distance calculation",
+    "Hardcoded Maharashtra NGO sample data for Mumbai (Robin Hood Army, Roti Bank, Feeding India), Pune (Annadaan Foundation, Seva Sahayog), Nagpur (Bhojan Seva Trust, Green Nagpur NGO)",
+    "Four roles: Donor (restaurant/hostel/household), NGO, Volunteer, Admin",
+    "Glassmorphism card design with Framer Motion animations and micro-interactions; smooth CSS transitions are permitted"
   ],
   "known_issues": [],
   "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Left2Lift app logo — stylized bowl or plate with an upward arrow and two open hands motif in deep green and warm orange on a transparent background (left2lift-logo.dim_256x256.png)",
+  "imageRequirements": "## Required Images\n- From Waste to Plate hero banner illustration: a warm-toned scene showing hands passing a food tray over a Maharashtra cityscape silhouette with green fields and orange sunset sky, modern flat illustration style (hero-banner.dim_1200x400.png)\n- Impact dashboard background graphic: abstract green and orange wavy lines with food bowl and leaf motifs suggesting sustainability and abundance (impact-bg.dim_1200x400.png)\n- Volunteer badge icon: a stylized running figure carrying a food box, in green and orange tones, flat icon style (volunteer-icon.dim_128x128.png)\n- Emergency mode warning illustration: a red alert siren with a plate and fork symbol, flat vector style in red and dark tones (emergency-icon.dim_128x128.png)\n\n## Edit Images\n- Update the existing app logo to add 'Maharashtra Edition' subtitle text below the plate/arrow motif (logo.dim_256x256.png > logo-maharashtra.dim_256x256.png)",
   "existing_features": [
     {
       "id": "feature-implement-internet-identity-authentication-with-first-login-role-selection-on-first-call-from-a-new-principal-the-backend-returns-no-role-the-frontend-then-shows-a-role-selection-screen-hotel-ngo-admin-with-no-css-animations-or-transitions-the-selected-role-is-stored-in-the-backend-linked-to-the-caller-s-principal-id-subsequent-logins-route-directly-to-the-role-specific-panel-based-on-the-stored-role",
@@ -71,6 +71,86 @@
       "title": "Generate and render a custom app logo image for Left2Lift: a stylized food-sharing icon combining a plate/bowl with a upward arrow or hands motif, in green and orange tones, for use in the top navigation bar and login screen. Render it as a static asset from frontend/public/assets/generated.",
       "reqIds": [
         "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-home-page-with-1-an-animated-hero-section-displaying-the-tagline-from-waste-to-plate-powered-by-ai-delivered-with-dignity-glassmorphism-card-styling-and-food-impact-iconography-2-a-maharashtra-city-selector-mumbai-pune-nagpur-nashik-aurangabad-kolhapur-that-sets-the-active-city-context-used-throughout-the-app-3-live-impact-counters-animating-up-for-meals-saved-people-fed-and-co-reduced-seeded-with-realistic-demo-values-4-two-cta-buttons-donate-food-and-i-am-an-ngo-5-a-voice-mic-button-using-web-speech-api-that-accepts-spoken-donation-intent-and-pre-fills-the-donate-food-form",
+      "title": "Build a Home page with: (1) an animated hero section displaying the tagline 'From waste to plate — powered by AI, delivered with dignity', glassmorphism card styling, and food/impact iconography; (2) a Maharashtra city selector (Mumbai, Pune, Nagpur, Nashik, Aurangabad, Kolhapur) that sets the active city context used throughout the app; (3) live impact counters animating up for Meals Saved, People Fed, and CO₂ Reduced (seeded with realistic demo values); (4) two CTA buttons — 'Donate Food' and 'I Am an NGO'; (5) a voice mic button using Web Speech API that accepts spoken donation intent and pre-fills the Donate Food form.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-donate-food-page-with-1-a-form-collecting-food-type-dropdown-rice-curry-bread-desserts-vegetables-fish-dairy-other-quantity-in-kg-time-since-cooked-hours-storage-condition-refrigerated-room-temperature-hot-pickup-address-text-with-maharashtra-area-suggestions-from-demo-data-andheri-east-dadar-west-bandra-kurla-complex-fc-road-hinjewadi-kothrud-sitabuldi-wardha-road-dharampeth-and-city-selector-2-voice-input-toggle-that-populates-form-fields-via-web-speech-api-3-on-submit-display-an-ai-safety-badge-safe-urgent-unsafe-with-remaining-hours-text-e-g-safe-for-4-5-more-hours-an-animated-ngo-matching-result-card-showing-nearest-ngo-name-distance-km-and-estimated-pickup-time-minutes-and-a-route-preview-section",
+      "title": "Build a Donate Food page with: (1) a form collecting food type (dropdown: Rice, Curry, Bread, Desserts, Vegetables, Fish, Dairy, Other), quantity in kg, time since cooked (hours), storage condition (Refrigerated, Room Temperature, Hot), pickup address (text with Maharashtra area suggestions from demo data — Andheri East, Dadar West, Bandra Kurla Complex, FC Road, Hinjewadi, Kothrud, Sitabuldi, Wardha Road, Dharampeth), and city selector; (2) voice input toggle that populates form fields via Web Speech API; (3) on submit: display an AI safety badge (Safe/Urgent/Unsafe) with remaining hours text (e.g. 'Safe for 4.5 more hours'), an animated NGO matching result card showing nearest NGO name, distance (km), and estimated pickup time (minutes), and a route preview section.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-frontend-only-ai-food-safety-engine-pure-typescript-logic-no-external-api-inputs-food-type-quantity-time-since-cooked-hours-storage-condition-and-city-used-to-apply-maharashtra-climate-factor-logic-base-expiry-thresholds-refrigerated-24h-room-temperature-6h-hot-4h-reduce-threshold-by-2h-for-highly-perishable-types-fish-dairy-apply-a-climate-factor-cities-with-high-summer-temperatures-mumbai-nashik-aurangabad-nagpur-reduce-threshold-by-an-additional-0-5h-compute-remaining-safe-hours-threshold-timesincecooked-classify-status-safe-3h-remaining-urgent-1-3h-unsafe-1h-return-status-label-remaining-hours-string-e-g-safe-for-4-5-more-hours-and-a-color-badge-class",
+      "title": "Implement a frontend-only AI Food Safety Engine (pure TypeScript logic, no external API). Inputs: food type, quantity, time since cooked (hours), storage condition, and city (used to apply Maharashtra climate factor). Logic: base expiry thresholds — Refrigerated: 24h, Room Temperature: 6h, Hot: 4h. Reduce threshold by 2h for highly perishable types (Fish, Dairy). Apply a climate factor: cities with high summer temperatures (Mumbai, Nashik, Aurangabad, Nagpur) reduce threshold by an additional 0.5h. Compute remaining safe hours = threshold - timeSinceCooked. Classify status: Safe (>=3h remaining), Urgent (1–3h), Unsafe (<1h). Return status label, remaining hours string (e.g. 'Safe for 4.5 more hours'), and a color badge class.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-smart-nearest-trust-finder-in-the-frontend-using-hardcoded-maharashtra-ngo-sample-data-with-coordinates-ngo-data-mumbai-robin-hood-army-andheri-lat-19-1136-lng-72-8697-roti-bank-dadar-lat-19-0176-lng-72-8422-feeding-india-bandra-lat-19-0544-lng-72-8402-pune-annadaan-foundation-kothrud-lat-18-5018-lng-73-8077-seva-sahayog-shivajinagar-lat-18-5308-lng-73-8474-nagpur-bhojan-seva-trust-dharampeth-lat-21-1458-lng-79-0882-green-nagpur-ngo-sitabuldi-lat-21-1497-lng-79-0809-logic-use-the-haversine-formula-to-compute-distance-from-donor-s-city-area-coordinates-to-each-ngo-compute-urgency-score-remaininghours-0-4-1-distancekm-0-4-capacityscore-0-2-select-the-ngo-with-the-highest-urgency-score-display-nearest-trust-found-x-x-km-away-estimated-pickup-in-yy-minutes-estimate-distance-0-5-km-min",
+      "title": "Implement a Smart Nearest Trust Finder in the frontend using hardcoded Maharashtra NGO sample data with coordinates. NGO data: Mumbai — Robin Hood Army (Andheri, lat:19.1136, lng:72.8697), Roti Bank (Dadar, lat:19.0176, lng:72.8422), Feeding India (Bandra, lat:19.0544, lng:72.8402); Pune — Annadaan Foundation (Kothrud, lat:18.5018, lng:73.8077), Seva Sahayog (Shivajinagar, lat:18.5308, lng:73.8474); Nagpur — Bhojan Seva Trust (Dharampeth, lat:21.1458, lng:79.0882), Green Nagpur NGO (Sitabuldi, lat:21.1497, lng:79.0809). Logic: use the Haversine formula to compute distance from donor's city area coordinates to each NGO. Compute urgency score = (remainingHours × 0.4) + ((1/distanceKm) × 0.4) + (capacityScore × 0.2). Select the NGO with the highest urgency score. Display: 'Nearest trust found X.X km away – Estimated pickup in YY minutes' (estimate: distance / 0.5 km/min).",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-an-enhanced-ngo-dashboard-page-replacing-or-extending-the-existing-ngopanel-with-1-donation-requests-view-showing-cards-with-food-type-quantity-food-safety-status-badge-from-ai-engine-remaining-safe-hours-countdown-hotel-name-pickup-address-distance-from-ngo-accept-reject-buttons-2-a-priority-badge-on-urgent-unsafe-donations-3-an-embedded-map-preview-placeholder-showing-a-static-route-card-openstreetmap-tile-iframe-or-styled-placeholder-4-ngo-metrics-total-donations-received-total-kg-people-served-kg-2-5-5-donation-history-table-with-date-hotel-name-food-type-quantity-status-columns",
+      "title": "Build an enhanced NGO Dashboard page (replacing or extending the existing NGOPanel) with: (1) Donation Requests view showing cards with food type, quantity, food safety status badge (from AI engine), remaining safe hours countdown, hotel name, pickup address, distance from NGO, Accept/Reject buttons; (2) a priority badge on urgent/unsafe donations; (3) an embedded map preview placeholder showing a static route card (OpenStreetMap tile iframe or styled placeholder); (4) NGO metrics: total donations received, total kg, people served (kg × 2.5); (5) donation history table with date, hotel name, food type, quantity, status columns.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-volunteer-dashboard-page-accessible-from-the-main-navigation-show-1-a-list-of-pickup-assignment-cards-each-with-donor-name-address-food-type-quantity-urgency-color-coding-green-yellow-red-border-a-countdown-timer-showing-time-until-food-expires-and-a-route-button-2-a-smart-assignment-note-showing-why-this-volunteer-was-selected-proximity-based-3-urgent-pickup-notification-banners-at-the-top-e-g-urgent-food-pickup-near-andheri-east-15-meals-expiring-in-2-hours-for-urgent-unsafe-donations-4-a-status-update-button-mark-as-picked-up-mark-as-delivered-populate-with-realistic-demo-assignment-data-for-mumbai-pune-nagpur-areas",
+      "title": "Build a Volunteer Dashboard page accessible from the main navigation. Show: (1) a list of pickup assignment cards, each with donor name/address, food type, quantity, urgency color coding (green/yellow/red border), a countdown timer showing time until food expires, and a route button; (2) a smart assignment note showing why this volunteer was selected (proximity-based); (3) urgent pickup notification banners at the top (e.g. 'Urgent food pickup near Andheri East. 15 meals expiring in 2 hours.') for Urgent/Unsafe donations; (4) a status update button (Mark as Picked Up, Mark as Delivered). Populate with realistic demo assignment data for Mumbai/Pune/Nagpur areas.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-an-impact-dashboard-page-with-1-animated-stat-cards-for-total-meals-rescued-total-kg-redistributed-co-saved-kg-2-1-estimate-and-total-people-fed-2-a-city-wise-breakdown-chart-bar-or-donut-showing-donations-by-maharashtra-city-mumbai-pune-nagpur-nashik-aurangabad-kolhapur-using-seeded-demo-data-3-a-top-donors-leaderboard-table-showing-donor-name-city-total-kg-donated-and-a-badge-for-top-contributor-4-an-ai-voice-summary-button-that-uses-web-speech-api-speechsynthesis-to-speak-a-summary-like-today-in-pune-312-meals-were-saved-helping-over-780-people-5-animated-chart-transitions-on-page-load",
+      "title": "Build an Impact Dashboard page with: (1) animated stat cards for total meals rescued, total kg redistributed, CO₂ saved (kg × 2.1 estimate), and total people fed; (2) a city-wise breakdown chart (bar or donut) showing donations by Maharashtra city (Mumbai, Pune, Nagpur, Nashik, Aurangabad, Kolhapur) using seeded demo data; (3) a top donors leaderboard table showing donor name, city, total kg donated, and a badge for top contributor; (4) an AI voice summary button that uses Web Speech API (speechSynthesis) to speak a summary like 'Today in Pune, 312 meals were saved, helping over 780 people.'; (5) animated chart transitions on page load.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-emergency-mode-as-a-global-toggle-accessible-from-the-header-navigation-when-activated-1-the-entire-ui-shifts-to-a-red-accented-theme-red-header-red-card-borders-red-status-indicators-2-all-active-donations-are-visually-flagged-as-priority-override-3-a-persistent-full-width-red-banner-displays-hunger-emergency-mode-active-all-volunteers-notified-4-all-urgent-unsafe-donation-cards-in-the-ngo-and-volunteer-dashboards-float-to-the-top-of-their-lists-5-the-toggle-persists-in-react-state-for-the-session-deactivating-restores-the-normal-green-orange-theme",
+      "title": "Implement Emergency Mode as a global toggle accessible from the header navigation. When activated: (1) the entire UI shifts to a red-accented theme (red header, red card borders, red status indicators); (2) all active donations are visually flagged as Priority Override; (3) a persistent full-width red banner displays 'HUNGER EMERGENCY MODE ACTIVE – All volunteers notified'; (4) all Urgent/Unsafe donation cards in the NGO and Volunteer dashboards float to the top of their lists; (5) the toggle persists in React state for the session. Deactivating restores the normal green/orange theme.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-bonus-ux-features-1-multi-language-toggle-in-the-header-supporting-english-hindi-and-marathi-translate-all-static-ui-labels-button-text-and-headings-using-a-simple-i18n-string-map-2-dark-mode-toggle-in-the-header-that-switches-the-tailwind-theme-class-on-the-root-element-3-animated-loading-states-skeleton-screens-or-spinner-overlays-for-all-data-fetching-operations-4-real-time-toast-notifications-using-a-lightweight-toast-system-for-events-donation-submitted-ngo-matched-donation-accepted-rejected-volunteer-assigned",
+      "title": "Implement bonus UX features: (1) Multi-language toggle in the header supporting English, Hindi (हिंदी), and Marathi (मराठी) — translate all static UI labels, button text, and headings using a simple i18n string map; (2) Dark mode toggle in the header that switches the Tailwind theme class on the root element; (3) Animated loading states (skeleton screens or spinner overlays) for all data-fetching operations; (4) Real-time toast notifications (using a lightweight toast system) for events: donation submitted, NGO matched, donation accepted/rejected, volunteer assigned.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-glassmorphism-forward-visual-redesign-across-all-pages-consistent-with-the-hackathon-theme-use-soft-green-16a34a-range-and-warm-orange-ea7c2b-range-as-primary-palette-frosted-glass-card-style-backdrop-filter-blur-semi-transparent-white-dark-backgrounds-with-border-smooth-css-transitions-on-hover-and-state-changes-no-framer-motion-dependency-required-css-transitions-acceptable-mobile-responsive-layout-with-flex-grid-floating-micro-interactions-on-buttons-subtle-scale-shadow-on-hover-food-location-and-impact-iconography-via-inline-svg-or-lucide-icons-throughout-all-pages-including-home-donate-food-ngo-dashboard-volunteer-dashboard-impact-dashboard-and-admin-panel",
+      "title": "Apply a glassmorphism-forward visual redesign across all pages consistent with the hackathon theme. Use: soft green (#16a34a range) and warm orange (#ea7c2b range) as primary palette; frosted glass card style (backdrop-filter blur, semi-transparent white/dark backgrounds with border); smooth CSS transitions on hover and state changes (no Framer Motion dependency required, CSS transitions acceptable); mobile-responsive layout with flex/grid; floating micro-interactions on buttons (subtle scale/shadow on hover); food, location, and impact iconography via inline SVG or Lucide icons throughout all pages including Home, Donate Food, NGO Dashboard, Volunteer Dashboard, Impact Dashboard, and Admin Panel.",
+      "reqIds": [
+        "REQ-24"
       ],
       "version": 1
     }
@@ -171,6 +251,76 @@
       "summary": "Implement Admin backend endpoints: (1) listAllUsers — returns all hotel and NGO profiles with active status. (2) deactivateUser(principal) — sets active=false on the specified profile. (3) listAllDonations — returns all donation records with hotel name, NGO name if matched, and spoilage flag. (4) systemAnalytics — returns aggregate stats: totalKgRedistributed (sum of kg of Completed donations), totalUsers, totalDonations, wasteReducedKg (sum of kg of Unmatched + Rejected + spoilageSafe=false donations). Access restricted to Admin role principal.",
       "reqIds": [
         "REQ-12"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Home page: animated hero section, voice mic button, CTA buttons, live counters (meals saved, people fed, CO₂ reduced), Maharashtra city selector",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "AI Food Safety Engine: calculate expiry window with Maharashtra climate factor, city-based temperature input, status badges (Safe/Urgent/Unsafe), display remaining safe hours",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Smart Nearest Trust Finder: Haversine distance calculation, urgency scoring formula, hardcoded Maharashtra NGO sample data (Mumbai/Pune/Nagpur), show distance and estimated pickup time",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "Route optimization using Google Maps API or OpenStreetMap: shortest route factoring expiry time, multi-pickup sorted by earliest expiry",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Volunteer dashboard: smart assignment by proximity/availability/rating, pickup assignments with route, countdown timer, urgency color coding, push-style urgent pickup notifications",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Impact dashboard: animated charts for total meals rescued, city-wise breakdown, CO₂ saved, top donors leaderboard, AI voice summary (Web Speech API)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "Emergency Mode toggle: UI turns red, priority override, broadcast to all volunteers",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Bonus features: multi-language toggle (English/Hindi/Marathi), dark mode, animated loading states, real-time toast notifications, AI daily summary report via OpenAI API",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Donate Food page: food type, quantity, cook time, storage condition form with auto-detect location, voice input, post-submit AI safety badge, animated NGO matching, route preview",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-39",
+      "summary": "Add Volunteer role support to the backend. Extend the UserRole variant to include a Volunteer option. Create a VolunteerProfile type with fields: principal (Principal), name (Text), city (Text), active (Bool), availabilityStatus (Text). Add a registerVolunteer update function callable by Volunteer-role principals. Add a query to fetch the caller's own volunteer profile. Add a listVolunteerAssignments query that returns all Pending/Matched donations in the volunteer's city. Store volunteer profiles in a stable TrieMap keyed by principal.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-40",
+      "summary": "Extend the backend systemAnalytics endpoint to also return: totalVolunteers (count of active volunteer profiles), citywiseStats (array of {city: Text, totalKg: Float, donationCount: Nat} for each Maharashtra city), and co2SavedKg (totalKgRedistributed × 2.1). Store city on each donation record (Text field) so city-wise aggregation is possible. Update the donation submission endpoint to accept and store the donor's city.",
+      "reqIds": [
+        "REQ-26"
       ],
       "status": "pending"
     }

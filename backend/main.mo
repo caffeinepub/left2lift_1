@@ -10,10 +10,11 @@ import Int "mo:core/Int";
 import Principal "mo:core/Principal";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   // ===== Types =====
-
   public type FoodType = {
     #rice;
     #curry;
@@ -45,9 +46,9 @@ actor {
     #admin;
     #hotel;
     #ngo;
+    #volunteer;
   };
 
-  // UserProfile required by the instructions frontend contract
   public type UserProfile = {
     appRole : AppUserRole;
     displayName : Text;
@@ -69,6 +70,14 @@ actor {
     active : Bool;
   };
 
+  public type VolunteerProfile = {
+    principal : Principal;
+    name : Text;
+    city : Text;
+    active : Bool;
+    availabilityStatus : Text;
+  };
+
   public type Donation = {
     id : Nat;
     hotelPrincipal : Principal;
@@ -79,6 +88,7 @@ actor {
     storageCondition : StorageCondition;
     pickupAddress : Text;
     pickupDeadline : Time.Time;
+    city : Text;
     status : DonationStatus;
     spoilageSafe : Bool;
     submittedAt : Time.Time;
@@ -91,11 +101,20 @@ actor {
     comment : Text;
   };
 
+  public type CitywiseStats = {
+    city : Text;
+    totalKg : Float;
+    donationCount : Nat;
+  };
+
   public type SystemAnalytics = {
     totalKgRedistributed : Float;
     totalUsers : Nat;
+    totalVolunteers : Nat;
     totalDonations : Nat;
     wasteReducedKg : Float;
+    co2SavedKg : Float;
+    citywiseStats : [CitywiseStats];
   };
 
   // ===== Persistent State =====
@@ -103,6 +122,7 @@ actor {
   var nextDonationId = 0;
   let hotelsStore = Map.empty<Principal, HotelProfile>();
   let ngosStore = Map.empty<Principal, NGOProfile>();
+  let volunteersStore = Map.empty<Principal, VolunteerProfile>();
   let donationsStore = Map.empty<Nat, Donation>();
   let feedbacksStore = Map.empty<Nat, FeedbackRecord>();
   let appRolesStore = Map.empty<Principal, AppUserRole>();
@@ -131,6 +151,13 @@ actor {
   func isNGOCaller(caller : Principal) : Bool {
     switch (getAppRole(caller)) {
       case (?#ngo) { true };
+      case (_) { false };
+    };
+  };
+
+  func isVolunteerCaller(caller : Principal) : Bool {
+    switch (getAppRole(caller)) {
+      case (?#volunteer) { true };
       case (_) { false };
     };
   };
@@ -196,9 +223,86 @@ actor {
     };
   };
 
+  // ===== Volunteer Registration =====
+
+  /// Register the caller as a Volunteer. Requires authenticated user.
+  public shared ({ caller }) func registerVolunteer(
+    name : Text,
+    city : Text,
+    availabilityStatus : Text,
+  ) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Must be authenticated to register as a volunteer");
+    };
+    if (volunteersStore.containsKey(caller)) {
+      Runtime.trap("Volunteer already registered for this principal");
+    };
+
+    let profile : VolunteerProfile = {
+      principal = caller;
+      name;
+      city;
+      active = true;
+      availabilityStatus;
+    };
+    volunteersStore.add(caller, profile);
+    storeAppRole(caller, #volunteer);
+
+    let userProfile : UserProfile = {
+      appRole = #volunteer;
+      displayName = name;
+    };
+    userProfilesStore.add(caller, userProfile);
+  };
+
+  public query ({ caller }) func getMyVolunteerProfile() : async ?VolunteerProfile {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Must be authenticated to view your volunteer profile");
+    };
+    volunteersStore.get(caller);
+  };
+
+  public shared ({ caller }) func updateVolunteerStatus(active : Bool, availabilityStatus : Text) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Must be authenticated to update volunteer status");
+    };
+    if (not isVolunteerCaller(caller)) {
+      Runtime.trap("Unauthorized: Only volunteers can update their status");
+    };
+    switch (volunteersStore.get(caller)) {
+      case (null) { Runtime.trap("Volunteer profile not found") };
+      case (?profile) {
+        let updated = {
+          profile with
+          active;
+          availabilityStatus;
+        };
+        volunteersStore.add(caller, updated);
+      };
+    };
+  };
+
+  public query ({ caller }) func listVolunteerAssignments() : async [Donation] {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Must be authenticated to view volunteer assignments");
+    };
+    if (not isVolunteerCaller(caller)) {
+      Runtime.trap("Unauthorized: Only volunteers can view their assignments");
+    };
+    switch (volunteersStore.get(caller)) {
+      case (null) { Runtime.trap("Please register as a volunteer first") };
+      case (?profile) {
+        donationsStore.values().toArray().filter(
+          func(d) {
+            (d.city == profile.city) and (d.status == #pending or d.status == #matched)
+          }
+        );
+      };
+    };
+  };
+
   // ===== Required UserProfile Functions (frontend contract) =====
 
-  /// Get the caller's own UserProfile. Requires authenticated user.
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only authenticated users can get their profile");
@@ -206,17 +310,14 @@ actor {
     userProfilesStore.get(caller);
   };
 
-  /// Save the caller's own UserProfile. Requires authenticated user.
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only authenticated users can save their profile");
     };
     userProfilesStore.add(caller, profile);
-    // Also sync the appRole from the profile
     storeAppRole(caller, profile.appRole);
   };
 
-  /// Get another user's profile. Caller can view own profile; admins can view any.
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
     if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Can only view your own profile");
@@ -235,7 +336,6 @@ actor {
 
   // ===== Hotel Registration =====
 
-  /// Register the caller as a Hotel. Requires authenticated user.
   public shared ({ caller }) func registerHotel(name : Text) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Must be authenticated to register as a hotel");
@@ -252,7 +352,6 @@ actor {
     hotelsStore.add(caller, profile);
     storeAppRole(caller, #hotel);
 
-    // Also create/update UserProfile
     let userProfile : UserProfile = {
       appRole = #hotel;
       displayName = name;
@@ -262,7 +361,6 @@ actor {
 
   // ===== NGO Registration =====
 
-  /// Register the caller as an NGO. Requires authenticated user.
   public shared ({ caller }) func registerNGO(
     orgName : Text,
     locationAddress : Text,
@@ -288,7 +386,6 @@ actor {
     ngosStore.add(caller, profile);
     storeAppRole(caller, #ngo);
 
-    // Also create/update UserProfile
     let userProfile : UserProfile = {
       appRole = #ngo;
       displayName = orgName;
@@ -298,7 +395,6 @@ actor {
 
   // ===== Donation Submission =====
 
-  /// Submit a food donation. Only Hotel role users can call this.
   public shared ({ caller }) func submitDonation(
     foodType : FoodType,
     quantityKg : Float,
@@ -306,6 +402,7 @@ actor {
     storageCondition : StorageCondition,
     pickupAddress : Text,
     pickupDeadline : Time.Time,
+    city : Text,
   ) : async (Bool, ?Principal) {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Must be authenticated to submit a donation");
@@ -334,6 +431,7 @@ actor {
       storageCondition;
       pickupAddress;
       pickupDeadline;
+      city;
       status;
       spoilageSafe = isSafe;
       submittedAt = Time.now();
@@ -341,7 +439,6 @@ actor {
 
     donationsStore.add(nextDonationId, donation);
 
-    // Update NGO capacity if matched
     switch (matchedNGO) {
       case (?ngoPrincipal) { updateNGOCapacity(ngoPrincipal, quantityKg) };
       case (null) {};
@@ -353,7 +450,6 @@ actor {
 
   // ===== NGO Accept/Reject =====
 
-  /// Accept a donation. Only the matched NGO principal can call this.
   public shared ({ caller }) func acceptDonation(donationId : Nat) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Must be authenticated to accept a donation");
@@ -373,7 +469,6 @@ actor {
     };
   };
 
-  /// Reject a donation and attempt re-matching. Only the matched NGO principal can call this.
   public shared ({ caller }) func rejectDonation(donationId : Nat) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Must be authenticated to reject a donation");
@@ -388,11 +483,8 @@ actor {
           Runtime.trap("Unauthorized: Only the matched NGO can reject this donation");
         };
 
-        // Restore NGO capacity before re-matching
         updateNGOCapacity(caller, -donation.quantityKg);
 
-        // Attempt re-matching excluding the rejecting NGO
-        // Simple re-match: find next best NGO
         let newMatch = matchNGO(donation.foodType, donation.quantityKg);
         let newStatus : DonationStatus = switch (newMatch) {
           case (null) { #unmatched };
@@ -406,7 +498,6 @@ actor {
         };
         donationsStore.add(donationId, updatedDonation);
 
-        // Update new NGO capacity if re-matched
         switch (newMatch) {
           case (?ngoPrincipal) { updateNGOCapacity(ngoPrincipal, donation.quantityKg) };
           case (null) {};
@@ -417,7 +508,6 @@ actor {
 
   // ===== Admin: Update Donation Status =====
 
-  /// Update any donation's status. Admin only.
   public shared ({ caller }) func updateDonationStatus(donationId : Nat, newStatus : DonationStatus) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can update donation status");
@@ -433,7 +523,6 @@ actor {
 
   // ===== Feedback =====
 
-  /// Submit feedback for a completed donation. Only NGO role users can call this.
   public shared ({ caller }) func submitFeedback(donationId : Nat, rating : Nat, comment : Text) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Must be authenticated to submit feedback");
@@ -461,8 +550,10 @@ actor {
     };
   };
 
-  /// Get average rating for a hotel based on feedback on its completed donations.
   public query ({ caller }) func getHotelAverageRating(hotelPrincipal : Principal) : async Float {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Must be authenticated to view hotel ratings");
+    };
     var total = 0;
     var count = 0;
     for ((_, feedback) in feedbacksStore.entries()) {
@@ -482,17 +573,16 @@ actor {
 
   // ===== Admin Endpoints =====
 
-  /// List all hotel and NGO profiles. Admin only.
-  public query ({ caller }) func listAllUsers() : async ([HotelProfile], [NGOProfile]) {
+  public query ({ caller }) func listAllUsers() : async ([HotelProfile], [NGOProfile], [VolunteerProfile]) {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can list all users");
     };
     let hotels = hotelsStore.values().toArray();
     let ngos = ngosStore.values().toArray();
-    (hotels, ngos);
+    let volunteers = volunteersStore.values().toArray();
+    (hotels, ngos, volunteers);
   };
 
-  /// Deactivate a user (hotel or NGO). Admin only.
   public shared ({ caller }) func deactivateUser(principal : Principal) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can deactivate users");
@@ -507,14 +597,20 @@ actor {
             ngosStore.add(principal, { ngo with active = false });
           };
           case (null) {
-            Runtime.trap("User not found");
+            switch (volunteersStore.get(principal)) {
+              case (?volunteer) {
+                volunteersStore.add(principal, { volunteer with active = false });
+              };
+              case (null) {
+                Runtime.trap("User not found");
+              };
+            };
           };
         };
       };
     };
   };
 
-  /// List all donations with enriched info. Admin only.
   public query ({ caller }) func listAllDonations() : async [Donation] {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can list all donations");
@@ -522,7 +618,6 @@ actor {
     donationsStore.values().toArray();
   };
 
-  /// System analytics. Admin only.
   public query ({ caller }) func systemAnalytics() : async SystemAnalytics {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can view system analytics");
@@ -531,6 +626,18 @@ actor {
     var totalKgRedistributed = 0.0;
     var wasteReducedKg = 0.0;
     var totalDonations = 0;
+
+    let cities = [
+      "Mumbai",
+      "Pune",
+      "Nagpur",
+      "Nashik",
+      "Aurangabad",
+      "Solapur",
+      "Thane",
+    ];
+
+    let cityStatsMap = Map.empty<Text, (Float, Nat)>();
 
     for ((_, donation) in donationsStore.entries()) {
       totalDonations += 1;
@@ -544,23 +651,61 @@ actor {
       ) {
         wasteReducedKg += donation.quantityKg;
       };
+
+      let cityValid = cities.find(func(c) { c == donation.city });
+      switch (cityValid) {
+        case (?_) {
+          let currentStats = cityStatsMap.get(donation.city);
+          let updatedStats = switch (currentStats) {
+            case (?stats) {
+              (stats.0 + donation.quantityKg, stats.1 + 1);
+            };
+            case (null) { (donation.quantityKg, 1) };
+          };
+          cityStatsMap.add(donation.city, updatedStats);
+        };
+        case (null) {};
+      };
     };
 
     let totalHotels = hotelsStore.size();
     let totalNGOs = ngosStore.size();
-    let totalUsers = totalHotels + totalNGOs;
+    let totalVolunteers = volunteersStore.size();
+    let totalUsers = totalHotels + totalNGOs + totalVolunteers;
+
+    let citywiseStats = cities.map(func(city) {
+      let stats = cityStatsMap.get(city);
+      switch (stats) {
+        case (?s) {
+          {
+            city;
+            totalKg = s.0;
+            donationCount = s.1;
+          };
+        };
+        case (null) {
+          {
+            city;
+            totalKg = 0.0;
+            donationCount = 0;
+          };
+        };
+      };
+    });
 
     {
       totalKgRedistributed;
       totalUsers;
+      totalVolunteers;
       totalDonations;
       wasteReducedKg;
+      co2SavedKg = totalKgRedistributed * 2.1;
+      citywiseStats;
     };
   };
 
   // ===== Query Endpoints =====
 
-  /// Get a hotel profile. Any authenticated user can view.
   public query ({ caller }) func getHotelProfile(hotelId : Principal) : async ?HotelProfile {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Must be authenticated to view hotel profiles");
@@ -568,7 +713,6 @@ actor {
     hotelsStore.get(hotelId);
   };
 
-  /// Get an NGO profile. Any authenticated user can view.
   public query ({ caller }) func getNGOProfile(ngoId : Principal) : async ?NGOProfile {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Must be authenticated to view NGO profiles");
@@ -576,7 +720,13 @@ actor {
     ngosStore.get(ngoId);
   };
 
-  /// Get a donation record. Any authenticated user can view.
+  public query ({ caller }) func getVolunteerProfile(volunteerId : Principal) : async ?VolunteerProfile {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Must be authenticated to view volunteer profiles");
+    };
+    volunteersStore.get(volunteerId);
+  };
+
   public query ({ caller }) func getDonation(donationId : Nat) : async ?Donation {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Must be authenticated to view donations");
@@ -584,7 +734,6 @@ actor {
     donationsStore.get(donationId);
   };
 
-  /// Get all donations for the calling hotel. Hotel role only.
   public query ({ caller }) func getMyHotelDonations() : async [Donation] {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Must be authenticated");
@@ -598,7 +747,6 @@ actor {
     result;
   };
 
-  /// Get all donations matched to the calling NGO. NGO role only.
   public query ({ caller }) func getMyNGODonations() : async [Donation] {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Must be authenticated");
@@ -612,7 +760,6 @@ actor {
     result;
   };
 
-  /// Get the calling NGO's own profile. NGO role only.
   public query ({ caller }) func getMyNGOProfile() : async ?NGOProfile {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Must be authenticated");
@@ -623,7 +770,6 @@ actor {
     ngosStore.get(caller);
   };
 
-  /// Get the calling hotel's own profile. Hotel role only.
   public query ({ caller }) func getMyHotelProfile() : async ?HotelProfile {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Must be authenticated");
@@ -632,5 +778,24 @@ actor {
       Runtime.trap("Unauthorized: Only hotels can view their own hotel profile");
     };
     hotelsStore.get(caller);
+  };
+
+  public query ({ caller }) func getMyVolunteerAssignments() : async [Donation] {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Must be authenticated");
+    };
+    if (not isVolunteerCaller(caller)) {
+      Runtime.trap("Unauthorized: Only volunteers can view their assignments");
+    };
+    switch (volunteersStore.get(caller)) {
+      case (?volunteer) {
+        donationsStore.values().toArray().filter(
+          func(d) {
+            (d.city == volunteer.city) and (d.status == #pending or d.status == #matched)
+          }
+        );
+      };
+      case (null) { [] };
+    };
   };
 };

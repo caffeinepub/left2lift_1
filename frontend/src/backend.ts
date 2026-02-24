@@ -93,6 +93,7 @@ export interface Donation {
     id: bigint;
     status: DonationStatus;
     spoilageSafe: boolean;
+    city: string;
     submittedAt: Time;
     pickupDeadline: Time;
     pickupAddress: string;
@@ -105,9 +106,12 @@ export interface Donation {
 }
 export type Time = bigint;
 export interface SystemAnalytics {
+    totalVolunteers: bigint;
     wasteReducedKg: number;
+    co2SavedKg: number;
     totalUsers: bigint;
     totalDonations: bigint;
+    citywiseStats: Array<CitywiseStats>;
     totalKgRedistributed: number;
 }
 export interface NGOProfile {
@@ -124,14 +128,27 @@ export interface HotelProfile {
     active: boolean;
     name: string;
 }
+export interface VolunteerProfile {
+    principal: Principal;
+    active: boolean;
+    city: string;
+    name: string;
+    availabilityStatus: string;
+}
 export interface UserProfile {
     displayName: string;
     appRole: AppUserRole;
 }
+export interface CitywiseStats {
+    city: string;
+    totalKg: number;
+    donationCount: bigint;
+}
 export enum AppUserRole {
     ngo = "ngo",
     admin = "admin",
-    hotel = "hotel"
+    hotel = "hotel",
+    volunteer = "volunteer"
 }
 export enum DonationStatus {
     pending = "pending",
@@ -164,100 +181,43 @@ export enum UserRole {
 }
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
-    /**
-     * / Accept a donation. Only the matched NGO principal can call this.
-     */
     acceptDonation(donationId: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    /**
-     * / Deactivate a user (hotel or NGO). Admin only.
-     */
     deactivateUser(principal: Principal): Promise<void>;
-    /**
-     * / Get the caller's own UserProfile. Requires authenticated user.
-     */
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCurrentRole(): Promise<AppUserRole | null>;
-    /**
-     * / Get a donation record. Any authenticated user can view.
-     */
     getDonation(donationId: bigint): Promise<Donation | null>;
-    /**
-     * / Get average rating for a hotel based on feedback on its completed donations.
-     */
     getHotelAverageRating(hotelPrincipal: Principal): Promise<number>;
-    /**
-     * / Get a hotel profile. Any authenticated user can view.
-     */
     getHotelProfile(hotelId: Principal): Promise<HotelProfile | null>;
-    /**
-     * / Get all donations for the calling hotel. Hotel role only.
-     */
     getMyHotelDonations(): Promise<Array<Donation>>;
-    /**
-     * / Get the calling hotel's own profile. Hotel role only.
-     */
     getMyHotelProfile(): Promise<HotelProfile | null>;
-    /**
-     * / Get all donations matched to the calling NGO. NGO role only.
-     */
     getMyNGODonations(): Promise<Array<Donation>>;
-    /**
-     * / Get the calling NGO's own profile. NGO role only.
-     */
     getMyNGOProfile(): Promise<NGOProfile | null>;
-    /**
-     * / Get an NGO profile. Any authenticated user can view.
-     */
+    getMyVolunteerAssignments(): Promise<Array<Donation>>;
+    getMyVolunteerProfile(): Promise<VolunteerProfile | null>;
     getNGOProfile(ngoId: Principal): Promise<NGOProfile | null>;
-    /**
-     * / Get another user's profile. Caller can view own profile; admins can view any.
-     */
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    getVolunteerProfile(volunteerId: Principal): Promise<VolunteerProfile | null>;
     isCallerAdmin(): Promise<boolean>;
-    /**
-     * / List all donations with enriched info. Admin only.
-     */
     listAllDonations(): Promise<Array<Donation>>;
-    /**
-     * / List all hotel and NGO profiles. Admin only.
-     */
-    listAllUsers(): Promise<[Array<HotelProfile>, Array<NGOProfile>]>;
-    /**
-     * / Register the caller as a Hotel. Requires authenticated user.
-     */
+    listAllUsers(): Promise<[Array<HotelProfile>, Array<NGOProfile>, Array<VolunteerProfile>]>;
+    listVolunteerAssignments(): Promise<Array<Donation>>;
     registerHotel(name: string): Promise<void>;
-    /**
-     * / Register the caller as an NGO. Requires authenticated user.
-     */
     registerNGO(orgName: string, locationAddress: string, foodTypePreferences: Array<FoodType>, dailyCapacityKg: number): Promise<void>;
     /**
-     * / Reject a donation and attempt re-matching. Only the matched NGO principal can call this.
+     * / Register the caller as a Volunteer. Requires authenticated user.
      */
+    registerVolunteer(name: string, city: string, availabilityStatus: string): Promise<void>;
     rejectDonation(donationId: bigint): Promise<void>;
-    /**
-     * / Save the caller's own UserProfile. Requires authenticated user.
-     */
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
-    /**
-     * / Submit a food donation. Only Hotel role users can call this.
-     */
-    submitDonation(foodType: FoodType, quantityKg: number, timeSinceCooked: number, storageCondition: StorageCondition, pickupAddress: string, pickupDeadline: Time): Promise<[boolean, Principal | null]>;
-    /**
-     * / Submit feedback for a completed donation. Only NGO role users can call this.
-     */
+    submitDonation(foodType: FoodType, quantityKg: number, timeSinceCooked: number, storageCondition: StorageCondition, pickupAddress: string, pickupDeadline: Time, city: string): Promise<[boolean, Principal | null]>;
     submitFeedback(donationId: bigint, rating: bigint, comment: string): Promise<void>;
-    /**
-     * / System analytics. Admin only.
-     */
     systemAnalytics(): Promise<SystemAnalytics>;
-    /**
-     * / Update any donation's status. Admin only.
-     */
     updateDonationStatus(donationId: bigint, newStatus: DonationStatus): Promise<void>;
+    updateVolunteerStatus(active: boolean, availabilityStatus: string): Promise<void>;
 }
-import type { AppUserRole as _AppUserRole, Donation as _Donation, DonationStatus as _DonationStatus, FoodType as _FoodType, HotelProfile as _HotelProfile, NGOProfile as _NGOProfile, StorageCondition as _StorageCondition, Time as _Time, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
+import type { AppUserRole as _AppUserRole, Donation as _Donation, DonationStatus as _DonationStatus, FoodType as _FoodType, HotelProfile as _HotelProfile, NGOProfile as _NGOProfile, StorageCondition as _StorageCondition, Time as _Time, UserProfile as _UserProfile, UserRole as _UserRole, VolunteerProfile as _VolunteerProfile } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _initializeAccessControlWithSecret(arg0: string): Promise<void> {
@@ -456,6 +416,34 @@ export class Backend implements backendInterface {
             return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getMyVolunteerAssignments(): Promise<Array<Donation>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMyVolunteerAssignments();
+                return from_candid_vec_n22(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMyVolunteerAssignments();
+            return from_candid_vec_n22(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getMyVolunteerProfile(): Promise<VolunteerProfile | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMyVolunteerProfile();
+                return from_candid_opt_n27(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMyVolunteerProfile();
+            return from_candid_opt_n27(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getNGOProfile(arg0: Principal): Promise<NGOProfile | null> {
         if (this.processError) {
             try {
@@ -482,6 +470,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getUserProfile(arg0);
             return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getVolunteerProfile(arg0: Principal): Promise<VolunteerProfile | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getVolunteerProfile(arg0);
+                return from_candid_opt_n27(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getVolunteerProfile(arg0);
+            return from_candid_opt_n27(this._uploadFile, this._downloadFile, result);
         }
     }
     async isCallerAdmin(): Promise<boolean> {
@@ -512,13 +514,14 @@ export class Backend implements backendInterface {
             return from_candid_vec_n22(this._uploadFile, this._downloadFile, result);
         }
     }
-    async listAllUsers(): Promise<[Array<HotelProfile>, Array<NGOProfile>]> {
+    async listAllUsers(): Promise<[Array<HotelProfile>, Array<NGOProfile>, Array<VolunteerProfile>]> {
         if (this.processError) {
             try {
                 const result = await this.actor.listAllUsers();
                 return [
                     result[0],
-                    from_candid_vec_n27(this._uploadFile, this._downloadFile, result[1])
+                    from_candid_vec_n28(this._uploadFile, this._downloadFile, result[1]),
+                    result[2]
                 ];
             } catch (e) {
                 this.processError(e);
@@ -528,8 +531,23 @@ export class Backend implements backendInterface {
             const result = await this.actor.listAllUsers();
             return [
                 result[0],
-                from_candid_vec_n27(this._uploadFile, this._downloadFile, result[1])
+                from_candid_vec_n28(this._uploadFile, this._downloadFile, result[1]),
+                result[2]
             ];
+        }
+    }
+    async listVolunteerAssignments(): Promise<Array<Donation>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.listVolunteerAssignments();
+                return from_candid_vec_n22(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.listVolunteerAssignments();
+            return from_candid_vec_n22(this._uploadFile, this._downloadFile, result);
         }
     }
     async registerHotel(arg0: string): Promise<void> {
@@ -549,14 +567,28 @@ export class Backend implements backendInterface {
     async registerNGO(arg0: string, arg1: string, arg2: Array<FoodType>, arg3: number): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.registerNGO(arg0, arg1, to_candid_vec_n28(this._uploadFile, this._downloadFile, arg2), arg3);
+                const result = await this.actor.registerNGO(arg0, arg1, to_candid_vec_n29(this._uploadFile, this._downloadFile, arg2), arg3);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.registerNGO(arg0, arg1, to_candid_vec_n28(this._uploadFile, this._downloadFile, arg2), arg3);
+            const result = await this.actor.registerNGO(arg0, arg1, to_candid_vec_n29(this._uploadFile, this._downloadFile, arg2), arg3);
+            return result;
+        }
+    }
+    async registerVolunteer(arg0: string, arg1: string, arg2: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.registerVolunteer(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.registerVolunteer(arg0, arg1, arg2);
             return result;
         }
     }
@@ -577,21 +609,21 @@ export class Backend implements backendInterface {
     async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n31(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n32(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n31(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n32(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
-    async submitDonation(arg0: FoodType, arg1: number, arg2: number, arg3: StorageCondition, arg4: string, arg5: Time): Promise<[boolean, Principal | null]> {
+    async submitDonation(arg0: FoodType, arg1: number, arg2: number, arg3: StorageCondition, arg4: string, arg5: Time, arg6: string): Promise<[boolean, Principal | null]> {
         if (this.processError) {
             try {
-                const result = await this.actor.submitDonation(to_candid_FoodType_n29(this._uploadFile, this._downloadFile, arg0), arg1, arg2, to_candid_StorageCondition_n35(this._uploadFile, this._downloadFile, arg3), arg4, arg5);
+                const result = await this.actor.submitDonation(to_candid_FoodType_n30(this._uploadFile, this._downloadFile, arg0), arg1, arg2, to_candid_StorageCondition_n36(this._uploadFile, this._downloadFile, arg3), arg4, arg5, arg6);
                 return [
                     result[0],
                     from_candid_opt_n18(this._uploadFile, this._downloadFile, result[1])
@@ -601,7 +633,7 @@ export class Backend implements backendInterface {
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.submitDonation(to_candid_FoodType_n29(this._uploadFile, this._downloadFile, arg0), arg1, arg2, to_candid_StorageCondition_n35(this._uploadFile, this._downloadFile, arg3), arg4, arg5);
+            const result = await this.actor.submitDonation(to_candid_FoodType_n30(this._uploadFile, this._downloadFile, arg0), arg1, arg2, to_candid_StorageCondition_n36(this._uploadFile, this._downloadFile, arg3), arg4, arg5, arg6);
             return [
                 result[0],
                 from_candid_opt_n18(this._uploadFile, this._downloadFile, result[1])
@@ -639,14 +671,28 @@ export class Backend implements backendInterface {
     async updateDonationStatus(arg0: bigint, arg1: DonationStatus): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateDonationStatus(arg0, to_candid_DonationStatus_n37(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.updateDonationStatus(arg0, to_candid_DonationStatus_n38(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateDonationStatus(arg0, to_candid_DonationStatus_n37(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.updateDonationStatus(arg0, to_candid_DonationStatus_n38(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
+    async updateVolunteerStatus(arg0: boolean, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateVolunteerStatus(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateVolunteerStatus(arg0, arg1);
             return result;
         }
     }
@@ -690,6 +736,9 @@ function from_candid_opt_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 function from_candid_opt_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_NGOProfile]): NGOProfile | null {
     return value.length === 0 ? null : from_candid_NGOProfile_n24(_uploadFile, _downloadFile, value[0]);
 }
+function from_candid_opt_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_VolunteerProfile]): VolunteerProfile | null {
+    return value.length === 0 ? null : value[0];
+}
 function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : from_candid_UserProfile_n4(_uploadFile, _downloadFile, value[0]);
 }
@@ -697,6 +746,7 @@ function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uin
     id: bigint;
     status: _DonationStatus;
     spoilageSafe: boolean;
+    city: string;
     submittedAt: _Time;
     pickupDeadline: _Time;
     pickupAddress: string;
@@ -710,6 +760,7 @@ function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uin
     id: bigint;
     status: DonationStatus;
     spoilageSafe: boolean;
+    city: string;
     submittedAt: Time;
     pickupDeadline: Time;
     pickupAddress: string;
@@ -724,6 +775,7 @@ function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uin
         id: value.id,
         status: from_candid_DonationStatus_n14(_uploadFile, _downloadFile, value.status),
         spoilageSafe: value.spoilageSafe,
+        city: value.city,
         submittedAt: value.submittedAt,
         pickupDeadline: value.pickupDeadline,
         pickupAddress: value.pickupAddress,
@@ -825,8 +877,10 @@ function from_candid_variant_n7(_uploadFile: (file: ExternalBlob) => Promise<Uin
     admin: null;
 } | {
     hotel: null;
+} | {
+    volunteer: null;
 }): AppUserRole {
-    return "ngo" in value ? AppUserRole.ngo : "admin" in value ? AppUserRole.admin : "hotel" in value ? AppUserRole.hotel : value;
+    return "ngo" in value ? AppUserRole.ngo : "admin" in value ? AppUserRole.admin : "hotel" in value ? AppUserRole.hotel : "volunteer" in value ? AppUserRole.volunteer : value;
 }
 function from_candid_variant_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
@@ -843,28 +897,28 @@ function from_candid_vec_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 function from_candid_vec_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_FoodType>): Array<FoodType> {
     return value.map((x)=>from_candid_FoodType_n19(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_NGOProfile>): Array<NGOProfile> {
+function from_candid_vec_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_NGOProfile>): Array<NGOProfile> {
     return value.map((x)=>from_candid_NGOProfile_n24(_uploadFile, _downloadFile, x));
 }
-function to_candid_AppUserRole_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AppUserRole): _AppUserRole {
-    return to_candid_variant_n34(_uploadFile, _downloadFile, value);
+function to_candid_AppUserRole_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AppUserRole): _AppUserRole {
+    return to_candid_variant_n35(_uploadFile, _downloadFile, value);
 }
-function to_candid_DonationStatus_n37(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: DonationStatus): _DonationStatus {
-    return to_candid_variant_n38(_uploadFile, _downloadFile, value);
+function to_candid_DonationStatus_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: DonationStatus): _DonationStatus {
+    return to_candid_variant_n39(_uploadFile, _downloadFile, value);
 }
-function to_candid_FoodType_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: FoodType): _FoodType {
-    return to_candid_variant_n30(_uploadFile, _downloadFile, value);
+function to_candid_FoodType_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: FoodType): _FoodType {
+    return to_candid_variant_n31(_uploadFile, _downloadFile, value);
 }
-function to_candid_StorageCondition_n35(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: StorageCondition): _StorageCondition {
-    return to_candid_variant_n36(_uploadFile, _downloadFile, value);
+function to_candid_StorageCondition_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: StorageCondition): _StorageCondition {
+    return to_candid_variant_n37(_uploadFile, _downloadFile, value);
 }
-function to_candid_UserProfile_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
-    return to_candid_record_n32(_uploadFile, _downloadFile, value);
+function to_candid_UserProfile_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
+    return to_candid_record_n33(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n2(_uploadFile, _downloadFile, value);
 }
-function to_candid_record_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_record_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     displayName: string;
     appRole: AppUserRole;
 }): {
@@ -873,7 +927,7 @@ function to_candid_record_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8
 } {
     return {
         displayName: value.displayName,
-        appRole: to_candid_AppUserRole_n33(_uploadFile, _downloadFile, value.appRole)
+        appRole: to_candid_AppUserRole_n34(_uploadFile, _downloadFile, value.appRole)
     };
 }
 function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {
@@ -891,7 +945,7 @@ function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         guest: null
     } : value;
 }
-function to_candid_variant_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: FoodType): {
+function to_candid_variant_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: FoodType): {
     desserts: null;
 } | {
     other: null;
@@ -926,12 +980,14 @@ function to_candid_variant_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint
         dairy: null
     } : value;
 }
-function to_candid_variant_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AppUserRole): {
+function to_candid_variant_n35(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AppUserRole): {
     ngo: null;
 } | {
     admin: null;
 } | {
     hotel: null;
+} | {
+    volunteer: null;
 } {
     return value == AppUserRole.ngo ? {
         ngo: null
@@ -939,9 +995,11 @@ function to_candid_variant_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint
         admin: null
     } : value == AppUserRole.hotel ? {
         hotel: null
+    } : value == AppUserRole.volunteer ? {
+        volunteer: null
     } : value;
 }
-function to_candid_variant_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: StorageCondition): {
+function to_candid_variant_n37(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: StorageCondition): {
     hot: null;
 } | {
     roomTemperature: null;
@@ -956,7 +1014,7 @@ function to_candid_variant_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint
         refrigerated: null
     } : value;
 }
-function to_candid_variant_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: DonationStatus): {
+function to_candid_variant_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: DonationStatus): {
     pending: null;
 } | {
     completed: null;
@@ -987,8 +1045,8 @@ function to_candid_variant_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint
         accepted: null
     } : value;
 }
-function to_candid_vec_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<FoodType>): Array<_FoodType> {
-    return value.map((x)=>to_candid_FoodType_n29(_uploadFile, _downloadFile, x));
+function to_candid_vec_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<FoodType>): Array<_FoodType> {
+    return value.map((x)=>to_candid_FoodType_n30(_uploadFile, _downloadFile, x));
 }
 export interface CreateActorOptions {
     agent?: Agent;

@@ -1,261 +1,416 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Left2Lift — Frontend Implementation for AI-Powered Food Redistribution Platform",
+  "title": "From Waste to Plate – Maharashtra Edition: Frontend Implementation Plan",
   "requirements": [
     {
-      "id": "REQ-2",
-      "summary": "Implement Internet Identity authentication with first-login role selection screen and role-based routing",
+      "id": "REQ-15",
+      "summary": "Build animated Home page with hero, city selector, impact counters, CTAs, and voice input",
       "acceptanceCriteria": [
-        "New principal sees role selection screen (static, no animations)",
-        "Role is persisted in backend after selection",
-        "Returning principal is routed to their role panel without role selection",
-        "Login screen has zero CSS transitions or keyframe animations"
+        "Hero section renders with tagline and glassmorphism styling",
+        "City selector shows all 6 Maharashtra cities and persists selection in app state",
+        "Live counters animate from 0 to seeded demo values on page load",
+        "CTA buttons navigate to Donate Food page and NGO section",
+        "Voice mic button triggers Web Speech API and pre-fills form fields on recognition"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/LoginButton.tsx",
+          "path": "frontend/src/pages/HomePage.tsx",
           "operation": "create",
-          "description": "Create login/logout button component using the authorization component's useInternetIdentity hook. Include login, logout, and status display. No CSS animations or transitions on this component."
-        },
-        {
-          "path": "frontend/src/components/RoleSelectionScreen.tsx",
-          "operation": "create",
-          "description": "Create role selection screen with three static buttons for Hotel, NGO, and Admin roles. No CSS transitions or keyframe animations. Calls saveCallerUserProfile with selected role as appRole and a displayName input field. Shows only when getCallerUserProfile returns null."
-        },
-        {
-          "path": "frontend/src/hooks/useGetCallerUserProfile.ts",
-          "operation": "create",
-          "description": "Create hook to fetch the caller's UserProfile using getCallerUserProfile backend method. Use authorization component's pattern to prevent modal flash by checking actor availability and proper loading states. Returns UserProfile | null."
+          "description": "Create Home page component with animated hero section displaying 'From waste to plate — powered by AI, delivered with dignity', glassmorphism card styling, food/impact iconography using Lucide icons. Include Maharashtra city selector dropdown (Mumbai, Pune, Nagpur, Nashik, Aurangabad, Kolhapur) with state management via React useState. Add three animated impact counter cards (Meals Saved, People Fed, CO₂ Reduced) using CSS keyframe animations counting from 0 to demo values (e.g., 12500 meals, 31250 people, 26250 kg CO₂). Render two CTA buttons ('Donate Food' linking to /hotel/donate, 'I Am an NGO' linking to /ngo). Add a voice mic button that calls Web Speech API (webkitSpeechRecognition), captures spoken donation intent, and navigates to /hotel/donate with pre-filled query params. Use generated hero banner image at frontend/public/assets/generated/hero-banner.dim_1200x400.png as background. Apply green/orange palette and backdrop-filter blur glassmorphism styling."
         },
         {
           "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Add authentication check using the authorization component's useInternetIdentity hook. Show LoginButton when not authenticated. Show RoleSelectionScreen when authenticated but getCallerUserProfile returns null. Route to role-specific panel (Hotel, NGO, or Admin) based on userProfile.appRole when profile exists. Verify the authorization component's usage instructions before implementing."
+          "description": "Add a new route for HomePage at path '/' before the authentication check. If user is not authenticated, render HomePage. If authenticated, continue with existing role-based routing logic. Ensure HomePage is accessible to anonymous users and serves as the public landing page."
+        },
+        {
+          "path": "frontend/src/hooks/useCityContext.tsx",
+          "operation": "create",
+          "description": "Create a React Context and provider for managing the selected Maharashtra city across the app. Export useCityContext hook returning { selectedCity: string | null, setSelectedCity: (city: string) => void }. Store city in state and optionally persist to sessionStorage. Wrap the app in App.tsx or main.tsx with CityProvider."
+        },
+        {
+          "path": "frontend/src/lib/speechUtils.ts",
+          "operation": "create",
+          "description": "Create utility functions for Web Speech API integration. Export startVoiceRecognition(onResult: (transcript: string) => void, onError?: (error: any) => void) that initializes webkitSpeechRecognition, sets language to 'en-IN', starts recognition, and calls onResult with the transcript. Export parseDonateSpeech(transcript: string) that uses simple keyword matching to extract food type, quantity, and time since cooked from spoken text (e.g., 'I want to donate 5 kg of rice cooked 2 hours ago'). Return an object { foodType?: string, quantity?: number, timeSinceCooked?: number }."
         }
       ]
     },
     {
-      "id": "REQ-6",
-      "summary": "Build Hotel Panel frontend with donation submission form and dashboard",
+      "id": "REQ-16",
+      "summary": "Build Donate Food page with form, voice input, AI safety badge, NGO match result, and route preview",
       "acceptanceCriteria": [
-        "All form fields are present as specified with correct input types",
-        "No lat/lng number inputs — pickup address is a single plain text field",
-        "Spoilage result and matched NGO are shown after submission",
-        "Dashboard metrics are computed from backend data",
-        "Donation history table shows date, food type, quantity, and status columns"
+        "Form collects all required fields including city and pickup address",
+        "Voice input button activates Web Speech API and fills form fields",
+        "On submit, AI safety badge displays with color coding (green/yellow/red) and remaining hours",
+        "NGO match card shows NGO name, distance in km, and estimated pickup time",
+        "Route preview section renders after successful submission"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/hotel/HotelDonationForm.tsx",
+          "path": "frontend/src/pages/DonateFoodPage.tsx",
           "operation": "create",
-          "description": "Create donation submission form with: food type dropdown (Rice, Curry, Bread, Desserts, Vegetables, Fish, Dairy, Other), quantity kg number input, time since cooked hours number input, storage condition dropdown (Refrigerated, Room Temperature, Hot), pickup address plain text input (single field, no lat/lng), pickup deadline datetime-local input. On submit call submitDonation backend method and display result card showing spoilageSafe bool and matched NGO principal/name if returned."
+          "description": "Create public Donate Food page accessible to unauthenticated users. Render a form with fields: food type dropdown (Rice, Curry, Bread, Desserts, Vegetables, Fish, Dairy, Other), quantity (number input in kg), time since cooked (number input in hours), storage condition radio buttons (Refrigerated, Room Temperature, Hot), pickup address text input with Maharashtra area autocomplete suggestions (Andheri East, Dadar West, Bandra Kurla Complex, FC Road, Hinjewadi, Kothrud, Sitabuldi, Wardha Road, Dharampeth), and city selector (reuse useCityContext). Add a voice input toggle button that calls startVoiceRecognition from speechUtils, parses the transcript with parseDonateSpeech, and populates form fields. On form submit, call calculateFoodSafety from foodSafetyEngine to get status badge. Call findNearestNGO from ngoMatchingEngine to get NGO match result. Display: (1) AI safety badge with Safe/Urgent/Unsafe label, remaining hours text (e.g., 'Safe for 4.5 more hours'), and color-coded background (green/yellow/red); (2) Animated NGO match card showing NGO name, distance (X.X km), estimated pickup time (YY minutes); (3) Route preview section with OpenStreetMap iframe embed or styled placeholder card. Use glassmorphism card styling and green/orange palette. For authenticated hotel users, call submitDonation backend mutation after displaying results."
         },
         {
-          "path": "frontend/src/components/hotel/HotelDashboard.tsx",
-          "operation": "create",
-          "description": "Create hotel dashboard view displaying: total donations submitted count, total kg donated sum, successful deliveries count (status=Completed), estimated people fed (total kg × 2.5), and donation history table with columns: submittedAt date, foodType, quantityKg, status. Fetch data from getMyHotelDonations backend method."
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add a new public route at '/donate' that renders DonateFoodPage. Place this route before authentication checks so anonymous users can access the donation form. If user is authenticated as Hotel role, allow form submission to backend; otherwise, show a prompt to log in after viewing results."
         },
         {
-          "path": "frontend/src/pages/HotelPanel.tsx",
+          "path": "frontend/src/lib/foodSafetyEngine.ts",
           "operation": "create",
-          "description": "Create hotel panel page with tab navigation between HotelDonationForm and HotelDashboard views. Guard with appRole check to ensure only Hotel users access this page."
+          "description": "Implement frontend-only AI Food Safety Engine as pure TypeScript logic. Export calculateFoodSafety(foodType: string, quantityKg: number, timeSinceCooked: number, storageCondition: string, city: string) function. Define base expiry thresholds: Refrigerated 24h, Room Temperature 6h, Hot 4h. Reduce threshold by 2h for Fish and Dairy. Apply Maharashtra climate factor: reduce threshold by 0.5h for Mumbai, Nashik, Aurangabad, Nagpur (high summer temperature cities). Compute remainingHours = threshold - timeSinceCooked. Classify: Safe (>=3h), Urgent (1-3h), Unsafe (<1h). Return { status: 'Safe' | 'Urgent' | 'Unsafe', remainingHours: number, badgeClass: string, message: string } where message is 'Safe for X.X more hours' or 'Urgent: X.X hours remaining' or 'Unsafe: expired'."
         },
         {
-          "path": "frontend/src/hooks/useSubmitDonation.ts",
+          "path": "frontend/src/lib/ngoMatchingEngine.ts",
           "operation": "create",
-          "description": "Create mutation hook for submitDonation backend method. Accept form data and return spoilageSafe bool and matched NGO principal."
+          "description": "Implement Smart Nearest Trust Finder as frontend TypeScript logic. Define hardcoded NGO data array with 7 entries: Mumbai (Robin Hood Army Andheri lat:19.1136 lng:72.8697, Roti Bank Dadar lat:19.0176 lng:72.8422, Feeding India Bandra lat:19.0544 lng:72.8402), Pune (Annadaan Foundation Kothrud lat:18.5018 lng:73.8077, Seva Sahayog Shivajinagar lat:18.5308 lng:73.8474), Nagpur (Bhojan Seva Trust Dharampeth lat:21.1458 lng:79.0882, Green Nagpur NGO Sitabuldi lat:21.1497 lng:79.0809). Export maharashtraCityCenters mapping city names to lat/lng. Export haversineDistance(lat1, lng1, lat2, lng2) implementing Haversine formula returning distance in km. Export findNearestNGO(city: string, remainingHours: number, pickupAddress?: string) that: (1) gets donor city center coords; (2) filters NGOs by city; (3) computes urgencyScore = (remainingHours * 0.4) + ((1/distanceKm) * 0.4) + (capacityScore * 0.2) where capacityScore defaults to 0.5; (4) returns NGO with highest score plus { ngoName: string, distanceKm: number, estimatedPickupMinutes: number } where estimatedPickupMinutes = Math.round(distanceKm / 0.5)."
         },
         {
-          "path": "frontend/src/hooks/useGetMyHotelDonations.ts",
+          "path": "frontend/src/components/donation/SafetyBadge.tsx",
           "operation": "create",
-          "description": "Create query hook to fetch getMyHotelDonations from backend. Returns array of Donation records for the calling hotel principal."
+          "description": "Create a reusable SafetyBadge component accepting props { status: 'Safe' | 'Urgent' | 'Unsafe', remainingHours: number, message: string }. Render a glassmorphism card with color-coded border and background (green for Safe, yellow for Urgent, red for Unsafe). Display status label, remaining hours, and AI badge icon. Use Lucide icons (ShieldCheck for Safe, AlertTriangle for Urgent, XCircle for Unsafe)."
+        },
+        {
+          "path": "frontend/src/components/donation/NGOMatchCard.tsx",
+          "operation": "create",
+          "description": "Create NGOMatchCard component accepting props { ngoName: string, distanceKm: number, estimatedPickupMinutes: number, isLoading?: boolean }. Render animated card (fade-in CSS transition) with glassmorphism styling. Display NGO name as heading, distance with MapPin icon, estimated pickup time with Clock icon. Add a subtle pulse animation on mount to draw attention."
+        },
+        {
+          "path": "frontend/src/components/donation/RoutePreview.tsx",
+          "operation": "create",
+          "description": "Create RoutePreview component accepting props { donorAddress: string, ngoAddress: string, city: string }. Render a glassmorphism card with a styled placeholder showing a simple route illustration (donor pin -> NGO pin with a line) or an OpenStreetMap iframe embed using the city center as the map center. Include a 'View Full Route' button placeholder. Use green/orange color scheme for route line."
         }
       ]
     },
     {
-      "id": "REQ-7",
-      "summary": "Implement NGO profile registration form",
+      "id": "REQ-17",
+      "summary": "Implement frontend-only AI Food Safety Engine with Maharashtra climate factor",
       "acceptanceCriteria": [
-        "NGO can register and update their profile",
-        "Location is stored as plain text — no lat/lng fields",
-        "Food type preferences stored as an array",
-        "Profile is retrievable by the NGO's principal ID"
+        "Refrigerated food returns safe for up to 24h (22h for Fish/Dairy)",
+        "Room Temperature food returns safe for up to 6h (4h for Fish/Dairy)",
+        "Hot food returns safe for up to 4h (2h for Fish/Dairy)",
+        "Mumbai/Nashik/Aurangabad/Nagpur reduce threshold by 0.5h as climate factor",
+        "Status badges render green for Safe, yellow for Urgent, red for Unsafe",
+        "Remaining hours string displays correctly"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ngo/NGOProfileForm.tsx",
+          "path": "frontend/src/lib/foodSafetyEngine.ts",
           "operation": "create",
-          "description": "Create NGO profile registration form with fields: organization name text input, location address plain text input (no lat/lng), food type preferences multi-select checkboxes (Rice, Curry, Bread, Desserts, Vegetables, Fish, Dairy, Other), daily capacity kg number input. On submit call registerNGO backend method. Show this form if getMyNGOProfile returns null after role selection."
-        },
-        {
-          "path": "frontend/src/hooks/useRegisterNGO.ts",
-          "operation": "create",
-          "description": "Create mutation hook for registerNGO backend method accepting orgName, locationAddress, foodTypePreferences array, and dailyCapacityKg."
-        },
-        {
-          "path": "frontend/src/hooks/useGetMyNGOProfile.ts",
-          "operation": "create",
-          "description": "Create query hook to fetch getMyNGOProfile from backend. Returns NGOProfile | null for the calling NGO principal."
+          "description": "Already covered in REQ-16. This file implements the complete AI Food Safety Engine logic with base thresholds, perishable food adjustments, Maharashtra climate factor, and status classification. No additional changes needed here."
         }
       ]
     },
     {
-      "id": "REQ-8",
-      "summary": "Build NGO Panel frontend with donation requests view, dashboard, and feedback form",
+      "id": "REQ-18",
+      "summary": "Implement Smart Nearest Trust Finder with Haversine distance and urgency scoring",
       "acceptanceCriteria": [
-        "Donation requests are filtered by NGO principal ID from backend",
-        "Remaining safe hours are calculated and displayed on each donation card",
-        "Accept/Reject update donation status in backend and reflect immediately in UI",
-        "Dashboard metrics are computed from backend data",
-        "Feedback form appears only for Completed donations"
+        "All 7 hardcoded NGOs with correct city and coordinates are present",
+        "Haversine formula correctly calculates distance between two lat/lng points",
+        "Urgency score formula applies all three weighted components",
+        "Nearest NGO result shows name, distance (1 decimal), and estimated pickup minutes",
+        "Result updates when donation form city or food type changes"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ngo/NGODonationRequests.tsx",
+          "path": "frontend/src/lib/ngoMatchingEngine.ts",
           "operation": "create",
-          "description": "Create donation requests view fetching getMyNGODonations. Display cards for each donation showing: foodType, quantityKg, remaining safe hours calculated as (pickupDeadline - Date.now()), hotel name from hotelPrincipal lookup, pickupAddress. Include Accept and Reject buttons calling acceptDonation and rejectDonation backend methods. Show both pending and accepted donations. Invalidate query cache after accept/reject to reflect new status immediately."
+          "description": "Already covered in REQ-16. This file implements the Smart Nearest Trust Finder with hardcoded Maharashtra NGO data, Haversine distance calculation, and urgency score formula. No additional changes needed here."
+        }
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "summary": "Build enhanced NGO Dashboard with donation requests, safety badges, map preview, and metrics",
+      "acceptanceCriteria": [
+        "Donation request cards show all fields including safety badge and remaining hours",
+        "Priority badge appears on Urgent and Unsafe donations",
+        "Accept/Reject buttons call backend and immediately update card status",
+        "Map preview section renders for accepted donations",
+        "NGO metrics show correct aggregated values"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/NGOPanel.tsx",
+          "operation": "modify",
+          "description": "Update NGOPanel to replace or extend the existing tabs. Add a new 'Requests' tab at the front that renders the enhanced NGODonationRequestsView component. Keep existing Dashboard and Profile tabs. Apply glassmorphism styling to tab buttons and ensure green/orange palette is used consistently."
         },
         {
-          "path": "frontend/src/components/ngo/NGODashboard.tsx",
+          "path": "frontend/src/components/ngo/NGODonationRequestsView.tsx",
           "operation": "create",
-          "description": "Create NGO dashboard displaying: total donations received count, total kg received sum, people served (total kg × 2.5), donation history table with columns: submittedAt date, hotel name from hotelPrincipal. Fetch data from getMyNGODonations backend method."
+          "description": "Create NGODonationRequestsView component that fetches donations via useGetMyNGODonations hook. Filter for Pending/Matched status donations. For each donation: (1) call calculateFoodSafety from foodSafetyEngine to compute current safety status and remaining hours; (2) render a glassmorphism card with food type, quantity, hotel name (fetch via getHotelProfile), pickup address, distance (hardcode demo value or compute if coords available), safety badge (use SafetyBadge component), countdown timer showing remaining hours in real-time (update every minute using setInterval); (3) add a priority badge (red flag icon) if status is Urgent or Unsafe; (4) render Accept and Reject buttons calling acceptDonation and rejectDonation mutations; (5) after Accept, show a MapPreviewCard component with OpenStreetMap iframe or static route placeholder; (6) display NGO metrics at top: total donations received (count), total kg (sum of quantityKg), people served (totalKg * 2.5). Use green/orange palette and smooth hover transitions."
         },
         {
-          "path": "frontend/src/components/ngo/NGOFeedbackForm.tsx",
+          "path": "frontend/src/components/ngo/MapPreviewCard.tsx",
           "operation": "create",
-          "description": "Create feedback form component with donationId input (hidden or readonly), rating 1-5 star selector, and comment textarea. Submit via submitFeedback backend method. Only show this form for donations with status=Completed."
+          "description": "Create MapPreviewCard component accepting props { donorAddress: string, ngoAddress: string, city: string }. Render a glassmorphism card with embedded OpenStreetMap iframe using city center coordinates as map center. Display 'Route Preview' heading and a note that this is a static preview. Use green border and subtle shadow. If OpenStreetMap embed is not feasible, render a styled placeholder with donor and NGO location labels and a decorative route line graphic."
+        },
+        {
+          "path": "frontend/src/components/ngo/NGOMetrics.tsx",
+          "operation": "create",
+          "description": "Create NGOMetrics component that accepts props { donations: Donation[] }. Compute: totalDonations = donations.length, totalKg = sum of quantityKg for Accepted/Completed donations, peopleServed = totalKg * 2.5. Render three glassmorphism stat cards in a grid with animated counters (CSS count-up on mount), Lucide icons (Package, Scale, Users), and green/orange accents. Display metrics with proper formatting (e.g., '1,234 kg')."
+        },
+        {
+          "path": "frontend/src/hooks/useCountdown.ts",
+          "operation": "create",
+          "description": "Create a custom React hook useCountdown(expiryTimestamp: bigint) that returns { hoursRemaining: number, minutesRemaining: number, isExpired: boolean }. Use setInterval to update every minute. Calculate time difference between expiryTimestamp (from donation.pickupDeadline) and current time. Return formatted remaining hours/minutes or expired flag."
+        }
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "summary": "Build Volunteer Dashboard with pickup assignments, countdown timers, urgency banners, and status updates",
+      "acceptanceCriteria": [
+        "Volunteer dashboard page is accessible from navigation",
+        "Assignment cards show all fields with urgency color borders",
+        "Countdown timer updates in real-time showing time remaining until expiry",
+        "Urgent notification banners appear for Urgent/Unsafe assignments",
+        "Demo data includes realistic Maharashtra addresses"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/VolunteerPanel.tsx",
+          "operation": "create",
+          "description": "Create VolunteerPanel page with tabs: 'My Assignments' and 'Profile'. In 'My Assignments' tab, fetch donations via useGetMyVolunteerAssignments hook (calls listVolunteerAssignments backend query). For each assignment: (1) compute food safety status and remaining hours using calculateFoodSafety; (2) render a glassmorphism card with urgency color-coded border (green for Safe, yellow for Urgent, red for Unsafe); (3) display donor name (fetch via getHotelProfile), pickup address, food type, quantity, safety badge, real-time countdown timer (using useCountdown hook); (4) add 'View Route' button placeholder and status update buttons ('Mark as Picked Up', 'Mark as Delivered') calling updateDonationStatus mutation. At top of page, render urgent pickup notification banners (full-width red glassmorphism alert) for any Urgent/Unsafe assignments with text like 'Urgent food pickup near [area]. [X] meals expiring in [Y] hours.' Use demo volunteer assignment data filtered by city. Add a smart assignment note below each card explaining proximity-based selection (e.g., 'Assigned to you: closest volunteer in [city]')."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add routing support for Volunteer role. In the authenticated section, check if currentRole is 'volunteer' and render VolunteerPanel component. Ensure navigation links in Layout component include a 'Volunteer' option when role is volunteer."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Update Layout header to show role badge for Volunteer role (e.g., 'Volunteer' badge in orange). Ensure navigation supports volunteer-specific links if role is volunteer."
+        },
+        {
+          "path": "frontend/src/components/volunteer/AssignmentCard.tsx",
+          "operation": "create",
+          "description": "Create AssignmentCard component accepting props { donation: Donation, urgencyStatus: 'Safe' | 'Urgent' | 'Unsafe', remainingHours: number }. Render glassmorphism card with color-coded border (green/yellow/red). Display donor name, pickup address, food type, quantity, countdown timer (HH:MM format), safety badge, and action buttons. Include a smart assignment note at bottom ('Assigned: nearest volunteer in [city]'). Add smooth hover scale transition."
+        },
+        {
+          "path": "frontend/src/components/volunteer/UrgentBanner.tsx",
+          "operation": "create",
+          "description": "Create UrgentBanner component accepting props { assignments: Array<{ area: string, mealCount: number, hoursRemaining: number }> }. Render full-width red glassmorphism banner with AlertTriangle icon and text like 'Urgent food pickup near [area]. [X] meals expiring in [Y] hours.' Stack multiple banners if multiple urgent assignments exist. Use red background with white text and pulsing animation."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add useGetMyVolunteerAssignments query hook that calls actor.listVolunteerAssignments() and returns Array<Donation>. Add useUpdateDonationStatus mutation hook that accepts donationId and newStatus, calls actor.updateDonationStatus, and invalidates volunteer assignment queries on success."
+        }
+      ]
+    },
+    {
+      "id": "REQ-21",
+      "summary": "Build Impact Dashboard with animated stats, city breakdown chart, leaderboard, and voice summary",
+      "acceptanceCriteria": [
+        "All four stat cards animate from 0 to target value on mount",
+        "City-wise chart renders with data for all 6 Maharashtra cities",
+        "Leaderboard table shows at least 5 demo donor entries with correct columns",
+        "Voice summary button triggers speechSynthesis with city-specific text",
+        "Charts use green/orange color palette consistent with app theme"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/ImpactDashboard.tsx",
+          "operation": "create",
+          "description": "Create ImpactDashboard page accessible from main navigation. Fetch systemAnalytics from backend. Render: (1) Four animated stat cards (totalKgRedistributed, wasteReducedKg, co2SavedKg, people fed = totalKgRedistributed * 2.5) using animated counters that count up from 0 on mount (CSS animation or JS interval); (2) City-wise breakdown chart (bar or donut chart using a lightweight chart library or custom SVG) showing citywiseStats data for all 6 Maharashtra cities (Mumbai, Pune, Nagpur, Nashik, Aurangabad, Kolhapur); (3) Top donors leaderboard table with columns: Donor Name, City, Total Kg Donated, Badge (gold crown icon for #1). Populate with demo data (5-10 entries) showing realistic Maharashtra hotel names and kg values; (4) AI voice summary button that synthesizes speech using Web Speech API (window.speechSynthesis) reading a summary like 'Today in [selectedCity], [mealCount] meals were saved, helping over [peopleCount] people.' Use green/orange palette, glassmorphism cards, and smooth chart animations. Place generated impact background image frontend/public/assets/generated/impact-bg.dim_1200x400.png as page background."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add a new route at '/impact' that renders ImpactDashboard. Make this route publicly accessible (before authentication check) so anyone can view impact metrics. Add a navigation link to 'Impact' in the header for all users."
+        },
+        {
+          "path": "frontend/src/components/impact/AnimatedStatCard.tsx",
+          "operation": "create",
+          "description": "Create AnimatedStatCard component accepting props { label: string, value: number, icon: ReactNode, unit?: string, decimals?: number }. Use CSS keyframe animation or requestAnimationFrame to animate counter from 0 to value over 2 seconds on mount. Render glassmorphism card with icon, animated number, unit, and label. Apply green/orange gradient accents."
+        },
+        {
+          "path": "frontend/src/components/impact/CityBreakdownChart.tsx",
+          "operation": "create",
+          "description": "Create CityBreakdownChart component accepting props { citywiseStats: Array<{ city: string, totalKg: number, donationCount: bigint }> }. Render a bar chart or donut chart (using SVG or a lightweight library like recharts if available, otherwise custom SVG bars). Show all 6 Maharashtra cities with their kg values. Use green/orange color gradient for bars. Add smooth animation on mount (bars grow from 0 to full height). Include axis labels and a legend."
+        },
+        {
+          "path": "frontend/src/components/impact/LeaderboardTable.tsx",
+          "operation": "create",
+          "description": "Create LeaderboardTable component with hardcoded demo donor data (5-10 entries). Each entry: { donorName: string, city: string, totalKg: number, rank: number }. Render a glassmorphism table with columns: Rank, Donor Name, City, Total Kg Donated, Badge. For rank 1, display a gold crown icon (Lucide Crown). Use alternating row background for readability. Apply green/orange accents to top 3 rows."
+        },
+        {
+          "path": "frontend/src/lib/speechUtils.ts",
+          "operation": "modify",
+          "description": "Add export function speakImpactSummary(city: string, mealCount: number, peopleCount: number) that uses window.speechSynthesis.speak to read aloud the summary text 'Today in [city], [mealCount] meals were saved, helping over [peopleCount] people.' Set voice language to 'en-IN' and rate to 1.0. Handle browser compatibility (check if speechSynthesis exists)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "summary": "Implement Emergency Mode global toggle with red theme, priority override, and persistent banner",
+      "acceptanceCriteria": [
+        "Emergency mode toggle button is visible in the header",
+        "Activating switches header and card borders to red accent theme",
+        "Full-width red banner appears when mode is active",
+        "Urgent/Unsafe donation cards sort to top in dashboard views",
+        "Deactivating restores green/orange theme"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useEmergencyMode.tsx",
+          "operation": "create",
+          "description": "Create a React Context and provider for Emergency Mode. Export useEmergencyMode hook returning { isEmergencyMode: boolean, toggleEmergencyMode: () => void }. Store state in React useState and optionally persist to sessionStorage. When active, return true; when inactive, return false. Wrap app in main.tsx or App.tsx with EmergencyModeProvider."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Add Emergency Mode toggle button to the header (red alert icon button). Use useEmergencyMode hook. On click, call toggleEmergencyMode. If isEmergencyMode is true, apply red accent classes to header background and border. Display persistent full-width red banner below header with text 'HUNGER EMERGENCY MODE ACTIVE – All volunteers notified' when mode is active."
         },
         {
           "path": "frontend/src/pages/NGOPanel.tsx",
-          "operation": "create",
-          "description": "Create NGO panel page with tab navigation between NGODonationRequests, NGODashboard, and feedback forms for completed donations. Guard with appRole check to ensure only NGO users access this page. Show NGOProfileForm if getMyNGOProfile returns null."
+          "operation": "modify",
+          "description": "Use useEmergencyMode hook. If isEmergencyMode is true, apply red border and red accent theme to all donation cards. Sort donation list so Urgent/Unsafe donations appear at the top. Add a 'PRIORITY OVERRIDE' badge to all donation cards when emergency mode is active."
         },
         {
-          "path": "frontend/src/hooks/useGetMyNGODonations.ts",
-          "operation": "create",
-          "description": "Create query hook to fetch getMyNGODonations from backend. Returns array of Donation records matched to the calling NGO principal."
+          "path": "frontend/src/pages/VolunteerPanel.tsx",
+          "operation": "modify",
+          "description": "Use useEmergencyMode hook. If isEmergencyMode is true, apply red border theme to all assignment cards and sort Urgent/Unsafe assignments to the top of the list. Show additional red 'PRIORITY' badge on all cards during emergency mode."
         },
         {
-          "path": "frontend/src/hooks/useAcceptDonation.ts",
-          "operation": "create",
-          "description": "Create mutation hook for acceptDonation backend method accepting donationId bigint. Invalidate getMyNGODonations query on success."
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add CSS custom properties for emergency mode red accent colors (e.g., --emergency-red: oklch(0.6 0.25 25)). Add utility classes .emergency-border, .emergency-bg, .emergency-text that apply red theming. Ensure these classes override the normal green/orange palette when applied."
         },
         {
-          "path": "frontend/src/hooks/useRejectDonation.ts",
+          "path": "frontend/src/components/EmergencyBanner.tsx",
           "operation": "create",
-          "description": "Create mutation hook for rejectDonation backend method accepting donationId bigint. Invalidate getMyNGODonations query on success."
-        },
-        {
-          "path": "frontend/src/hooks/useSubmitFeedback.ts",
-          "operation": "create",
-          "description": "Create mutation hook for submitFeedback backend method accepting donationId, rating (1-5 bigint), and comment text."
+          "description": "Create EmergencyBanner component that renders a full-width red glassmorphism banner with AlertTriangle icon and bold text 'HUNGER EMERGENCY MODE ACTIVE – All volunteers notified'. Use pulsing animation to draw attention. Position fixed at top of viewport below header."
         }
       ]
     },
     {
-      "id": "REQ-11",
-      "summary": "Build Admin Panel frontend with user management, food safety monitoring, and system analytics views",
+      "id": "REQ-23",
+      "summary": "Implement multi-language toggle, dark mode, loading states, and toast notifications",
       "acceptanceCriteria": [
-        "Admin can deactivate any hotel or NGO user",
-        "Food safety table shows spoilage flag with visual highlight for unsafe donations",
-        "Admin can change donation status from the monitoring table",
-        "Analytics figures are fetched from backend aggregation endpoints"
+        "Language toggle switches all static UI text to the selected language",
+        "Hindi and Marathi translations are provided for all main labels and buttons",
+        "Dark mode toggle applies dark background/light text theme across all pages",
+        "Skeleton loaders appear during backend query loading states",
+        "Toast notifications appear for donation submission, NGO match, accept/reject events"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/admin/AdminUserManagement.tsx",
+          "path": "frontend/src/hooks/useLanguage.tsx",
           "operation": "create",
-          "description": "Create user management view listing all hotels and NGOs from listAllUsers backend method. Display columns: name (hotel.name or ngo.orgName), role (Hotel or NGO), active status, and deactivate toggle button. On toggle call deactivateUser backend method with principal and refresh list."
+          "description": "Create a React Context and provider for multi-language support. Define language type as 'en' | 'hi' | 'mr'. Export useLanguage hook returning { language: string, setLanguage: (lang: string) => void, t: (key: string) => string }. Create a translations object mapping keys to { en: string, hi: string, mr: string }. Include translations for all main UI labels, button text, headings, form labels, and common messages (e.g., 'Donate Food', 'I Am an NGO', 'Login', 'Logout', 'Safe', 'Urgent', 'Unsafe', 'Meals Saved', 'People Fed', 'CO₂ Reduced', etc.). Store selected language in localStorage. Wrap app with LanguageProvider."
         },
         {
-          "path": "frontend/src/components/admin/AdminFoodSafetyMonitoring.tsx",
-          "operation": "create",
-          "description": "Create food safety monitoring table listing all donations from listAllDonations backend method. Columns: hotel name from hotelPrincipal, foodType, quantityKg, storageCondition, timeSinceCooked, spoilageSafe flag (highlight unsafe rows with red/orange background), current status, admin status-update dropdown. On status change call updateDonationStatus backend method and refresh table."
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Add language toggle dropdown or button group in header (flags or language codes: EN / हिं / मरा). Use useLanguage hook. On click, call setLanguage with selected language code. Ensure all static text in Layout uses t() translation function."
         },
         {
-          "path": "frontend/src/components/admin/AdminSystemAnalytics.tsx",
+          "path": "frontend/src/hooks/useTheme.tsx",
           "operation": "create",
-          "description": "Create system analytics view displaying metrics from systemAnalytics backend method: totalKgRedistributed, totalUsers (hotels + NGOs count), totalDonations, wasteReducedKg. Display in card layout with iconography."
+          "description": "Create a React Context and provider for dark mode. Export useTheme hook returning { theme: 'light' | 'dark', toggleTheme: () => void }. Store theme preference in localStorage. On theme change, toggle the 'dark' class on document.documentElement. Wrap app with ThemeProvider."
         },
         {
-          "path": "frontend/src/pages/AdminPanel.tsx",
-          "operation": "create",
-          "description": "Create admin panel page with tab navigation between AdminUserManagement, AdminFoodSafetyMonitoring, and AdminSystemAnalytics views. Guard with appRole check to ensure only Admin users access this page. Use the authorization component to verify admin role."
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Add dark mode toggle button in header (sun/moon icon). Use useTheme hook. On click, call toggleTheme. Ensure Tailwind dark mode classes are applied throughout the app (dark:bg-gray-900, dark:text-white, etc.)."
         },
         {
-          "path": "frontend/src/hooks/useListAllUsers.ts",
-          "operation": "create",
-          "description": "Create query hook for listAllUsers backend method. Returns tuple of [HotelProfile[], NGOProfile[]]."
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Ensure darkMode is set to 'class' in Tailwind config. Verify that all color tokens support dark mode variants. Add dark mode versions of green/orange palette if needed."
         },
         {
-          "path": "frontend/src/hooks/useListAllDonations.ts",
+          "path": "frontend/src/components/ui/LoadingSkeleton.tsx",
           "operation": "create",
-          "description": "Create query hook for listAllDonations backend method. Returns array of all Donation records with hotel and NGO principal lookups."
+          "description": "Create LoadingSkeleton component that renders animated skeleton placeholders (pulsing gray rectangles) for cards, tables, and text. Accept props { variant: 'card' | 'table' | 'text', count?: number }. Use Tailwind animate-pulse utility. Render multiple skeleton elements based on count prop."
         },
         {
-          "path": "frontend/src/hooks/useDeactivateUser.ts",
+          "path": "frontend/src/hooks/useToast.tsx",
           "operation": "create",
-          "description": "Create mutation hook for deactivateUser backend method accepting principal. Invalidate listAllUsers query on success."
+          "description": "Create a lightweight toast notification system using React Context. Export useToast hook returning { showToast: (message: string, type: 'success' | 'error' | 'info') => void }. Manage toast queue in state with auto-dismiss after 5 seconds. Export ToastContainer component that renders active toasts as fixed position glassmorphism cards in bottom-right corner with slide-in animation. Use green for success, red for error, orange for info. Wrap app with ToastProvider."
         },
         {
-          "path": "frontend/src/hooks/useUpdateDonationStatus.ts",
-          "operation": "create",
-          "description": "Create mutation hook for updateDonationStatus backend method accepting donationId and newStatus enum. Invalidate listAllDonations query on success."
+          "path": "frontend/src/pages/DonateFoodPage.tsx",
+          "operation": "modify",
+          "description": "Use useToast hook. On successful donation submission, call showToast('Donation submitted successfully!', 'success'). On NGO match, call showToast('NGO matched: [ngoName]', 'success'). On error, call showToast(errorMessage, 'error'). Wrap all React Query loading states with LoadingSkeleton component."
         },
         {
-          "path": "frontend/src/hooks/useSystemAnalytics.ts",
+          "path": "frontend/src/components/ngo/NGODonationRequestsView.tsx",
+          "operation": "modify",
+          "description": "Use useToast hook. On accept donation, call showToast('Donation accepted', 'success'). On reject, call showToast('Donation rejected', 'info'). Wrap query loading state with LoadingSkeleton component showing card skeletons."
+        },
+        {
+          "path": "frontend/src/pages/VolunteerPanel.tsx",
+          "operation": "modify",
+          "description": "Use useToast hook. On status update, call showToast('Status updated', 'success'). Wrap query loading with LoadingSkeleton showing assignment card skeletons."
+        },
+        {
+          "path": "frontend/src/lib/translations.ts",
           "operation": "create",
-          "description": "Create query hook for systemAnalytics backend method. Returns SystemAnalytics object with totalKgRedistributed, totalUsers, totalDonations, wasteReducedKg."
+          "description": "Define translations object with keys for all static UI text. Structure: { 'donateFood': { en: 'Donate Food', hi: 'भोजन दान करें', mr: 'अन्न दान करा' }, 'iAmAnNGO': { en: 'I Am an NGO', hi: 'मैं एक एनजीओ हूँ', mr: 'मी एक एनजीओ आहे' }, ... }. Include translations for: all page titles, form labels, button text, status labels (Safe/Urgent/Unsafe), dashboard headings, navigation links, error/success messages, and impact metrics labels. Export as default."
         }
       ]
     },
     {
-      "id": "REQ-13",
-      "summary": "Apply consistent green and orange visual theme across all panels",
+      "id": "REQ-24",
+      "summary": "Apply glassmorphism visual redesign with green/orange palette across all pages",
       "acceptanceCriteria": [
-        "No blue or purple color values appear anywhere in the UI",
-        "Primary actions use green; secondary highlights use orange",
-        "All data views use card-based layouts",
-        "Icons relate to food, location, or impact themes",
-        "Theme is consistent across all panels and the login/role selection screen"
+        "All cards use backdrop-filter blur with semi-transparent backgrounds",
+        "Green and orange palette is applied consistently across all pages",
+        "Hover states on buttons show scale and shadow transitions",
+        "Layout is responsive and usable on mobile viewports (320px+)",
+        "Food and impact icons are present on all major sections"
       ],
       "file_operations": [
         {
           "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Define CSS custom properties for green and orange theme colors. Primary green: #1a6b3c or similar deep green. Secondary orange: #e87722 or similar warm orange. Light backgrounds: white/light gray. Ensure no blue or purple values exist. Apply to all UI states including buttons, links, active states, focus rings."
+          "description": "Update global CSS to define glassmorphism utility classes (.glass-card, .glass-header, .glass-button) using backdrop-filter: blur(10px), semi-transparent white/dark backgrounds (e.g., rgba(255,255,255,0.1)), and border: 1px solid rgba(255,255,255,0.2). Ensure green (#16a34a) and orange (#ea7c2b) are set as primary and secondary OKLCH colors in CSS custom properties. Add smooth transition utilities (.transition-all, .hover-lift) for hover scale and shadow effects. Ensure mobile-responsive flex/grid utilities are available."
         },
         {
           "path": "frontend/tailwind.config.js",
           "operation": "modify",
-          "description": "Extend Tailwind theme with custom green and orange palette. Define primary as green (#1a6b3c), secondary as orange (#e87722). Remove or override any default blue/purple values. Configure sans-serif font family for clean typography."
+          "description": "Update Tailwind config to extend colors with green (primary) and orange (secondary) palette using OKLCH values. Add custom backdrop-blur utilities if not already present. Add animation keyframes for glassmorphism hover effects (scale, shadow). Ensure responsive breakpoints are configured (sm, md, lg, xl). Add custom box-shadow utilities for glassmorphism depth."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Apply glassmorphism styling to all cards (hero section, city selector, impact counters, CTA buttons). Use backdrop-filter blur, semi-transparent backgrounds, and green/orange accents. Add Lucide icons for food (Utensils, Leaf, TrendingUp) and impact (Users, Zap, TreePine). Ensure mobile-responsive layout with flex-col on small screens and flex-row on larger screens. Add hover scale transitions to CTA buttons."
+        },
+        {
+          "path": "frontend/src/pages/DonateFoodPage.tsx",
+          "operation": "modify",
+          "description": "Apply glassmorphism styling to form card, safety badge, NGO match card, and route preview. Use green/orange palette for input focus states, button backgrounds, and status indicators. Add food icons (Utensils, Package, MapPin) throughout the form. Ensure responsive layout with stacked form on mobile and side-by-side result cards on desktop."
+        },
+        {
+          "path": "frontend/src/pages/NGOPanel.tsx",
+          "operation": "modify",
+          "description": "Apply glassmorphism styling to all tabs, donation cards, and metrics cards. Use green/orange accents for active tabs and status badges. Add icons (Package, CheckCircle, XCircle, MapPin) to donation cards. Ensure mobile-responsive grid layout for cards."
+        },
+        {
+          "path": "frontend/src/pages/VolunteerPanel.tsx",
+          "operation": "modify",
+          "description": "Apply glassmorphism styling to assignment cards, urgent banners, and status buttons. Use green/yellow/red color coding for urgency. Add icons (Truck, Clock, MapPin, AlertTriangle) to cards. Ensure responsive layout with stacked cards on mobile."
+        },
+        {
+          "path": "frontend/src/pages/ImpactDashboard.tsx",
+          "operation": "modify",
+          "description": "Apply glassmorphism styling to stat cards, chart containers, and leaderboard table. Use green/orange gradient for chart bars and stat card accents. Add impact icons (TrendingUp, Users, Leaf, Award) to stat cards. Ensure responsive grid layout for stat cards (1 column on mobile, 2 on tablet, 4 on desktop)."
         },
         {
           "path": "frontend/src/components/Layout.tsx",
-          "operation": "create",
-          "description": "Create layout component with navigation bar, logo placement area (for generated logo from REQ-14), and role-based navigation links. Use card-based container layout. Apply green/orange theme consistently. Include food, location, and impact iconography from inline SVG or lucide-react."
-        }
-      ]
-    },
-    {
-      "id": "REQ-14",
-      "summary": "Render custom Left2Lift logo image in navigation and login screen",
-      "acceptanceCriteria": [
-        "Logo image is rendered in the nav bar and login screen",
-        "Image is served from frontend/public/assets/generated",
-        "Logo uses green and orange tones consistent with the app theme"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/Layout.tsx",
           "operation": "modify",
-          "description": "Add img element referencing the generated logo at frontend/public/assets/generated/left2lift-logo.dim_256x256.png in the navigation bar. Set appropriate width/height and alt text."
+          "description": "Apply glassmorphism styling to header and footer. Use backdrop-filter blur for header with semi-transparent background. Add green/orange accents to navigation links and role badge. Ensure header is sticky and responsive with hamburger menu on mobile if needed. Add floating micro-interaction on logo (subtle scale on hover)."
         },
         {
-          "path": "frontend/src/components/LoginButton.tsx",
+          "path": "frontend/src/pages/LoginScreen.tsx",
           "operation": "modify",
-          "description": "Add img element referencing the generated logo at frontend/public/assets/generated/left2lift-logo.dim_256x256.png above the login button. Display logo prominently on the login screen with appropriate sizing."
+          "description": "Apply glassmorphism styling to login card and CTA buttons. Use green/orange gradient for login button. Add food/impact icons to hero section. Ensure responsive layout with centered card on all screen sizes. Replace existing logo with generated logo at frontend/public/assets/generated/logo-maharashtra.dim_256x256.png (note: this is an edit of the existing logo as specified in imageRequirements)."
         }
       ]
     }

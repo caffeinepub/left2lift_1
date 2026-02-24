@@ -12,11 +12,18 @@ import type { Principal } from '@icp-sdk/core/principal';
 
 export type AppUserRole = { 'ngo' : null } |
   { 'admin' : null } |
-  { 'hotel' : null };
+  { 'hotel' : null } |
+  { 'volunteer' : null };
+export interface CitywiseStats {
+  'city' : string,
+  'totalKg' : number,
+  'donationCount' : bigint,
+}
 export interface Donation {
   'id' : bigint,
   'status' : DonationStatus,
   'spoilageSafe' : boolean,
+  'city' : string,
   'submittedAt' : Time,
   'pickupDeadline' : Time,
   'pickupAddress' : string,
@@ -60,9 +67,12 @@ export type StorageCondition = { 'hot' : null } |
   { 'roomTemperature' : null } |
   { 'refrigerated' : null };
 export interface SystemAnalytics {
+  'totalVolunteers' : bigint,
   'wasteReducedKg' : number,
+  'co2SavedKg' : number,
   'totalUsers' : bigint,
   'totalDonations' : bigint,
+  'citywiseStats' : Array<CitywiseStats>,
   'totalKgRedistributed' : number,
 }
 export type Time = bigint;
@@ -70,106 +80,59 @@ export interface UserProfile { 'displayName' : string, 'appRole' : AppUserRole }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface VolunteerProfile {
+  'principal' : Principal,
+  'active' : boolean,
+  'city' : string,
+  'name' : string,
+  'availabilityStatus' : string,
+}
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  /**
-   * / Accept a donation. Only the matched NGO principal can call this.
-   */
   'acceptDonation' : ActorMethod<[bigint], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  /**
-   * / Deactivate a user (hotel or NGO). Admin only.
-   */
   'deactivateUser' : ActorMethod<[Principal], undefined>,
-  /**
-   * / Get the caller's own UserProfile. Requires authenticated user.
-   */
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCurrentRole' : ActorMethod<[], [] | [AppUserRole]>,
-  /**
-   * / Get a donation record. Any authenticated user can view.
-   */
   'getDonation' : ActorMethod<[bigint], [] | [Donation]>,
-  /**
-   * / Get average rating for a hotel based on feedback on its completed donations.
-   */
   'getHotelAverageRating' : ActorMethod<[Principal], number>,
-  /**
-   * / Get a hotel profile. Any authenticated user can view.
-   */
   'getHotelProfile' : ActorMethod<[Principal], [] | [HotelProfile]>,
-  /**
-   * / Get all donations for the calling hotel. Hotel role only.
-   */
   'getMyHotelDonations' : ActorMethod<[], Array<Donation>>,
-  /**
-   * / Get the calling hotel's own profile. Hotel role only.
-   */
   'getMyHotelProfile' : ActorMethod<[], [] | [HotelProfile]>,
-  /**
-   * / Get all donations matched to the calling NGO. NGO role only.
-   */
   'getMyNGODonations' : ActorMethod<[], Array<Donation>>,
-  /**
-   * / Get the calling NGO's own profile. NGO role only.
-   */
   'getMyNGOProfile' : ActorMethod<[], [] | [NGOProfile]>,
-  /**
-   * / Get an NGO profile. Any authenticated user can view.
-   */
+  'getMyVolunteerAssignments' : ActorMethod<[], Array<Donation>>,
+  'getMyVolunteerProfile' : ActorMethod<[], [] | [VolunteerProfile]>,
   'getNGOProfile' : ActorMethod<[Principal], [] | [NGOProfile]>,
-  /**
-   * / Get another user's profile. Caller can view own profile; admins can view any.
-   */
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'getVolunteerProfile' : ActorMethod<[Principal], [] | [VolunteerProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  /**
-   * / List all donations with enriched info. Admin only.
-   */
   'listAllDonations' : ActorMethod<[], Array<Donation>>,
-  /**
-   * / List all hotel and NGO profiles. Admin only.
-   */
-  'listAllUsers' : ActorMethod<[], [Array<HotelProfile>, Array<NGOProfile>]>,
-  /**
-   * / Register the caller as a Hotel. Requires authenticated user.
-   */
+  'listAllUsers' : ActorMethod<
+    [],
+    [Array<HotelProfile>, Array<NGOProfile>, Array<VolunteerProfile>]
+  >,
+  'listVolunteerAssignments' : ActorMethod<[], Array<Donation>>,
   'registerHotel' : ActorMethod<[string], undefined>,
-  /**
-   * / Register the caller as an NGO. Requires authenticated user.
-   */
   'registerNGO' : ActorMethod<
     [string, string, Array<FoodType>, number],
     undefined
   >,
   /**
-   * / Reject a donation and attempt re-matching. Only the matched NGO principal can call this.
+   * / Register the caller as a Volunteer. Requires authenticated user.
    */
+  'registerVolunteer' : ActorMethod<[string, string, string], undefined>,
   'rejectDonation' : ActorMethod<[bigint], undefined>,
-  /**
-   * / Save the caller's own UserProfile. Requires authenticated user.
-   */
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
-  /**
-   * / Submit a food donation. Only Hotel role users can call this.
-   */
   'submitDonation' : ActorMethod<
-    [FoodType, number, number, StorageCondition, string, Time],
+    [FoodType, number, number, StorageCondition, string, Time, string],
     [boolean, [] | [Principal]]
   >,
-  /**
-   * / Submit feedback for a completed donation. Only NGO role users can call this.
-   */
   'submitFeedback' : ActorMethod<[bigint, bigint, string], undefined>,
-  /**
-   * / System analytics. Admin only.
-   */
   'systemAnalytics' : ActorMethod<[], SystemAnalytics>,
-  /**
-   * / Update any donation's status. Admin only.
-   */
   'updateDonationStatus' : ActorMethod<[bigint, DonationStatus], undefined>,
+  'updateVolunteerStatus' : ActorMethod<[boolean, string], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

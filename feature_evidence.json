@@ -2,12 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-implement-internet-identity-authentication-with-first-login-role-selection-on-first-call-from-a-new-principal-the-backend-returns-no-role-the-frontend-then-shows-a-role-selection-screen-hotel-ngo-admin-with-no-css-animations-or-transitions-the-selected-role-is-stored-in-the-backend-linked-to-the-caller-s-principal-id-subsequent-logins-route-directly-to-the-role-specific-panel-based-on-the-stored-role",
-      "featureTitle": "Implement Internet Identity authentication with first-login role selection. On first call from a new principal, the backend returns no role. The frontend then shows a role selection screen (Hotel, NGO, Admin) with no CSS animations or transitions. The selected role is stored in the backend linked to the caller's principal ID. Subsequent logins route directly to the role-specific panel based on the stored role.",
+      "featureId": "feature-build-a-home-page-with-1-an-animated-hero-section-displaying-the-tagline-from-waste-to-plate-powered-by-ai-delivered-with-dignity-glassmorphism-card-styling-and-food-impact-iconography-2-a-maharashtra-city-selector-mumbai-pune-nagpur-nashik-aurangabad-kolhapur-that-sets-the-active-city-context-used-throughout-the-app-3-live-impact-counters-animating-up-for-meals-saved-people-fed-and-co-reduced-seeded-with-realistic-demo-values-4-two-cta-buttons-donate-food-and-i-am-an-ngo-5-a-voice-mic-button-using-web-speech-api-that-accepts-spoken-donation-intent-and-pre-fills-the-donate-food-form",
+      "featureTitle": "Build a Home page with: (1) an animated hero section displaying the tagline 'From waste to plate — powered by AI, delivered with dignity', glassmorphism card styling, and food/impact iconography; (2) a Maharashtra city selector (Mumbai, Pune, Nagpur, Nashik, Aurangabad, Kolhapur) that sets the active city context used throughout the app; (3) live impact counters animating up for Meals Saved, People Fed, and CO₂ Reduced (seeded with realistic demo values); (4) two CTA buttons — 'Donate Food' and 'I Am an NGO'; (5) a voice mic button using Web Speech API that accepts spoken donation intent and pre-fills the Donate Food form.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/RoleSelectionScreen.tsx",
-        "frontend/src/hooks/useGetCallerUserProfile.ts"
+        "frontend/src/hooks/useCityContext.tsx",
+        "frontend/src/lib/speechUtils.ts",
+        "frontend/src/pages/HomePage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,17 +18,19 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-2"
+        "REQ-15"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-build-the-hotel-panel-frontend-with-two-views-1-donation-form-food-type-dropdown-rice-curry-bread-desserts-vegetables-other-quantity-in-kg-number-input-time-since-cooked-in-hours-number-input-storage-condition-dropdown-refrigerated-room-temperature-hot-pickup-address-plain-text-input-no-lat-lng-fields-pickup-deadline-datetime-input-on-submit-show-spoilage-result-and-matched-ngo-info-in-a-result-card-2-hotel-dashboard-show-total-donations-submitted-total-kg-donated-successful-deliveries-count-estimated-people-fed-total-kg-2-5-and-a-donation-history-table-with-columns-date-food-type-quantity-status",
-      "featureTitle": "Build the Hotel Panel frontend with two views: (1) Donation Form — food type dropdown (Rice, Curry, Bread, Desserts, Vegetables, Other), quantity in kg (number input), time since cooked in hours (number input), storage condition dropdown (Refrigerated, Room Temperature, Hot), pickup address (plain text input, no lat/lng fields), pickup deadline (datetime input). On submit show spoilage result and matched NGO info in a result card. (2) Hotel Dashboard — show: total donations submitted, total kg donated, successful deliveries count, estimated people fed (total kg × 2.5), and a donation history table with columns: date, food type, quantity, status.",
+      "featureId": "feature-build-a-donate-food-page-with-1-a-form-collecting-food-type-dropdown-rice-curry-bread-desserts-vegetables-fish-dairy-other-quantity-in-kg-time-since-cooked-hours-storage-condition-refrigerated-room-temperature-hot-pickup-address-text-with-maharashtra-area-suggestions-from-demo-data-andheri-east-dadar-west-bandra-kurla-complex-fc-road-hinjewadi-kothrud-sitabuldi-wardha-road-dharampeth-and-city-selector-2-voice-input-toggle-that-populates-form-fields-via-web-speech-api-3-on-submit-display-an-ai-safety-badge-safe-urgent-unsafe-with-remaining-hours-text-e-g-safe-for-4-5-more-hours-an-animated-ngo-matching-result-card-showing-nearest-ngo-name-distance-km-and-estimated-pickup-time-minutes-and-a-route-preview-section",
+      "featureTitle": "Build a Donate Food page with: (1) a form collecting food type (dropdown: Rice, Curry, Bread, Desserts, Vegetables, Fish, Dairy, Other), quantity in kg, time since cooked (hours), storage condition (Refrigerated, Room Temperature, Hot), pickup address (text with Maharashtra area suggestions from demo data — Andheri East, Dadar West, Bandra Kurla Complex, FC Road, Hinjewadi, Kothrud, Sitabuldi, Wardha Road, Dharampeth), and city selector; (2) voice input toggle that populates form fields via Web Speech API; (3) on submit: display an AI safety badge (Safe/Urgent/Unsafe) with remaining hours text (e.g. 'Safe for 4.5 more hours'), an animated NGO matching result card showing nearest NGO name, distance (km), and estimated pickup time (minutes), and a route preview section.",
       "files": [
-        "frontend/src/components/hotel/HotelDashboard.tsx",
-        "frontend/src/components/hotel/HotelDonationForm.tsx",
-        "frontend/src/pages/HotelPanel.tsx"
+        "frontend/src/components/donation/NGOMatchCard.tsx",
+        "frontend/src/components/donation/RoutePreview.tsx",
+        "frontend/src/components/donation/SafetyBadge.tsx",
+        "frontend/src/lib/foodSafetyEngine.ts",
+        "frontend/src/lib/ngoMatchingEngine.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -39,15 +41,15 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-6"
+        "REQ-16"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-ngo-profile-registration-setup-backend-endpoint-and-frontend-form-fields-organization-name-text-location-address-plain-text-string-no-lat-lng-food-type-preferences-array-of-food-type-enums-multi-select-daily-capacity-in-kg-float-store-profile-linked-to-ngo-s-principal-id-provide-a-query-endpoint-to-fetch-the-ngo-s-own-profile",
-      "featureTitle": "Implement NGO profile registration/setup backend endpoint and frontend form. Fields: organization name (Text), location address (plain text string, no lat/lng), food type preferences (array of food type enums, multi-select), daily capacity in kg (Float). Store profile linked to NGO's principal ID. Provide a query endpoint to fetch the NGO's own profile.",
+      "featureId": "feature-implement-a-frontend-only-ai-food-safety-engine-pure-typescript-logic-no-external-api-inputs-food-type-quantity-time-since-cooked-hours-storage-condition-and-city-used-to-apply-maharashtra-climate-factor-logic-base-expiry-thresholds-refrigerated-24h-room-temperature-6h-hot-4h-reduce-threshold-by-2h-for-highly-perishable-types-fish-dairy-apply-a-climate-factor-cities-with-high-summer-temperatures-mumbai-nashik-aurangabad-nagpur-reduce-threshold-by-an-additional-0-5h-compute-remaining-safe-hours-threshold-timesincecooked-classify-status-safe-3h-remaining-urgent-1-3h-unsafe-1h-return-status-label-remaining-hours-string-e-g-safe-for-4-5-more-hours-and-a-color-badge-class",
+      "featureTitle": "Implement a frontend-only AI Food Safety Engine (pure TypeScript logic, no external API). Inputs: food type, quantity, time since cooked (hours), storage condition, and city (used to apply Maharashtra climate factor). Logic: base expiry thresholds — Refrigerated: 24h, Room Temperature: 6h, Hot: 4h. Reduce threshold by 2h for highly perishable types (Fish, Dairy). Apply a climate factor: cities with high summer temperatures (Mumbai, Nashik, Aurangabad, Nagpur) reduce threshold by an additional 0.5h. Compute remaining safe hours = threshold - timeSinceCooked. Classify status: Safe (>=3h remaining), Urgent (1–3h), Unsafe (<1h). Return status label, remaining hours string (e.g. 'Safe for 4.5 more hours'), and a color badge class.",
       "files": [
-        "frontend/src/components/ngo/NGOProfileForm.tsx"
+        "frontend/src/lib/foodSafetyEngine.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -58,18 +60,15 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-7"
+        "REQ-17"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-build-the-ngo-panel-frontend-with-three-views-1-donation-requests-query-backend-for-donations-where-matchedngoprincipal-equals-the-logged-in-ngo-s-principal-show-cards-with-food-type-quantity-remaining-safe-hours-pickupdeadline-now-hotel-name-pickup-address-provide-accept-and-reject-buttons-that-call-backend-update-immediately-and-reflect-the-new-status-show-both-pending-and-accepted-donations-2-ngo-dashboard-total-donations-received-total-kg-received-people-served-total-kg-2-5-donation-history-with-date-and-hotel-name-columns-3-feedback-form-after-a-donation-is-marked-completed-allow-ngo-to-submit-a-1-5-star-rating-and-comment",
-      "featureTitle": "Build the NGO Panel frontend with three views: (1) Donation Requests — query backend for donations where matchedNGOPrincipal equals the logged-in NGO's principal. Show cards with: food type, quantity, remaining safe hours (pickupDeadline - now), hotel name, pickup address. Provide Accept and Reject buttons that call backend update immediately and reflect the new status. Show both pending and accepted donations. (2) NGO Dashboard — total donations received, total kg received, people served (total kg × 2.5), donation history with date and hotel name columns. (3) Feedback form — after a donation is marked Completed, allow NGO to submit a 1–5 star rating and comment.",
+      "featureId": "feature-implement-a-smart-nearest-trust-finder-in-the-frontend-using-hardcoded-maharashtra-ngo-sample-data-with-coordinates-ngo-data-mumbai-robin-hood-army-andheri-lat-19-1136-lng-72-8697-roti-bank-dadar-lat-19-0176-lng-72-8422-feeding-india-bandra-lat-19-0544-lng-72-8402-pune-annadaan-foundation-kothrud-lat-18-5018-lng-73-8077-seva-sahayog-shivajinagar-lat-18-5308-lng-73-8474-nagpur-bhojan-seva-trust-dharampeth-lat-21-1458-lng-79-0882-green-nagpur-ngo-sitabuldi-lat-21-1497-lng-79-0809-logic-use-the-haversine-formula-to-compute-distance-from-donor-s-city-area-coordinates-to-each-ngo-compute-urgency-score-remaininghours-0-4-1-distancekm-0-4-capacityscore-0-2-select-the-ngo-with-the-highest-urgency-score-display-nearest-trust-found-x-x-km-away-estimated-pickup-in-yy-minutes-estimate-distance-0-5-km-min",
+      "featureTitle": "Implement a Smart Nearest Trust Finder in the frontend using hardcoded Maharashtra NGO sample data with coordinates. NGO data: Mumbai — Robin Hood Army (Andheri, lat:19.1136, lng:72.8697), Roti Bank (Dadar, lat:19.0176, lng:72.8422), Feeding India (Bandra, lat:19.0544, lng:72.8402); Pune — Annadaan Foundation (Kothrud, lat:18.5018, lng:73.8077), Seva Sahayog (Shivajinagar, lat:18.5308, lng:73.8474); Nagpur — Bhojan Seva Trust (Dharampeth, lat:21.1458, lng:79.0882), Green Nagpur NGO (Sitabuldi, lat:21.1497, lng:79.0809). Logic: use the Haversine formula to compute distance from donor's city area coordinates to each NGO. Compute urgency score = (remainingHours × 0.4) + ((1/distanceKm) × 0.4) + (capacityScore × 0.2). Select the NGO with the highest urgency score. Display: 'Nearest trust found X.X km away – Estimated pickup in YY minutes' (estimate: distance / 0.5 km/min).",
       "files": [
-        "frontend/src/components/ngo/NGODashboard.tsx",
-        "frontend/src/components/ngo/NGODonationRequests.tsx",
-        "frontend/src/components/ngo/NGOFeedbackForm.tsx",
-        "frontend/src/pages/NGOPanel.tsx"
+        "frontend/src/lib/ngoMatchingEngine.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -80,18 +79,18 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-8"
+        "REQ-18"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-build-the-admin-panel-frontend-with-three-views-1-user-management-list-all-registered-hotels-and-ngos-with-their-name-role-and-an-active-deactivate-toggle-button-that-calls-backend-to-set-active-false-on-the-user-profile-2-food-safety-monitoring-list-all-donations-with-columns-hotel-name-food-type-quantity-storagecondition-timesincecooked-spoilagesafe-flag-highlight-unsafe-rows-current-status-and-admin-status-update-dropdown-3-system-analytics-display-total-kg-redistributed-total-registered-users-hotels-ngos-total-donations-submitted-estimated-waste-reduced-kg-of-spoiled-or-unmatched-donations",
-      "featureTitle": "Build the Admin Panel frontend with three views: (1) User Management — list all registered hotels and NGOs with their name, role, and an active/deactivate toggle button that calls backend to set active=false on the user profile. (2) Food Safety Monitoring — list all donations with columns: hotel name, food type, quantity, storageCondition, timeSinceCooked, spoilageSafe flag (highlight unsafe rows), current status, and admin status-update dropdown. (3) System Analytics — display: total kg redistributed, total registered users (hotels + NGOs), total donations submitted, estimated waste reduced (kg of spoiled or unmatched donations).",
+      "featureId": "feature-build-an-enhanced-ngo-dashboard-page-replacing-or-extending-the-existing-ngopanel-with-1-donation-requests-view-showing-cards-with-food-type-quantity-food-safety-status-badge-from-ai-engine-remaining-safe-hours-countdown-hotel-name-pickup-address-distance-from-ngo-accept-reject-buttons-2-a-priority-badge-on-urgent-unsafe-donations-3-an-embedded-map-preview-placeholder-showing-a-static-route-card-openstreetmap-tile-iframe-or-styled-placeholder-4-ngo-metrics-total-donations-received-total-kg-people-served-kg-2-5-5-donation-history-table-with-date-hotel-name-food-type-quantity-status-columns",
+      "featureTitle": "Build an enhanced NGO Dashboard page (replacing or extending the existing NGOPanel) with: (1) Donation Requests view showing cards with food type, quantity, food safety status badge (from AI engine), remaining safe hours countdown, hotel name, pickup address, distance from NGO, Accept/Reject buttons; (2) a priority badge on urgent/unsafe donations; (3) an embedded map preview placeholder showing a static route card (OpenStreetMap tile iframe or styled placeholder); (4) NGO metrics: total donations received, total kg, people served (kg × 2.5); (5) donation history table with date, hotel name, food type, quantity, status columns.",
       "files": [
-        "frontend/src/components/admin/AdminFoodSafetyMonitoring.tsx",
-        "frontend/src/components/admin/AdminSystemAnalytics.tsx",
-        "frontend/src/components/admin/AdminUserManagement.tsx",
-        "frontend/src/pages/AdminPanel.tsx"
+        "frontend/src/components/ngo/MapPreviewCard.tsx",
+        "frontend/src/components/ngo/NGODonationRequestsView.tsx",
+        "frontend/src/components/ngo/NGOMetrics.tsx",
+        "frontend/src/hooks/useCountdown.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -102,16 +101,82 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-11"
+        "REQ-19"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-apply-a-consistent-green-and-orange-visual-theme-across-all-panels-use-deep-green-1a6b3c-or-similar-and-warm-orange-e87722-or-similar-as-primary-palette-with-white-light-gray-backgrounds-use-card-based-layouts-for-all-data-displays-typography-should-be-clean-and-readable-sans-serif-use-food-location-and-impact-iconography-from-a-bundled-icon-set-or-inline-svg-no-blue-or-purple-anywhere-in-the-ui-apply-theme-consistently-across-login-role-selection-hotel-panel-ngo-panel-and-admin-panel",
-      "featureTitle": "Apply a consistent green and orange visual theme across all panels. Use deep green (#1a6b3c or similar) and warm orange (#e87722 or similar) as primary palette with white/light gray backgrounds. Use card-based layouts for all data displays. Typography should be clean and readable (sans-serif). Use food, location, and impact iconography (from a bundled icon set or inline SVG). No blue or purple anywhere in the UI. Apply theme consistently across login, role selection, hotel panel, NGO panel, and admin panel.",
+      "featureId": "feature-build-a-volunteer-dashboard-page-accessible-from-the-main-navigation-show-1-a-list-of-pickup-assignment-cards-each-with-donor-name-address-food-type-quantity-urgency-color-coding-green-yellow-red-border-a-countdown-timer-showing-time-until-food-expires-and-a-route-button-2-a-smart-assignment-note-showing-why-this-volunteer-was-selected-proximity-based-3-urgent-pickup-notification-banners-at-the-top-e-g-urgent-food-pickup-near-andheri-east-15-meals-expiring-in-2-hours-for-urgent-unsafe-donations-4-a-status-update-button-mark-as-picked-up-mark-as-delivered-populate-with-realistic-demo-assignment-data-for-mumbai-pune-nagpur-areas",
+      "featureTitle": "Build a Volunteer Dashboard page accessible from the main navigation. Show: (1) a list of pickup assignment cards, each with donor name/address, food type, quantity, urgency color coding (green/yellow/red border), a countdown timer showing time until food expires, and a route button; (2) a smart assignment note showing why this volunteer was selected (proximity-based); (3) urgent pickup notification banners at the top (e.g. 'Urgent food pickup near Andheri East. 15 meals expiring in 2 hours.') for Urgent/Unsafe donations; (4) a status update button (Mark as Picked Up, Mark as Delivered). Populate with realistic demo assignment data for Mumbai/Pune/Nagpur areas.",
       "files": [
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/index.css",
+        "frontend/src/components/volunteer/AssignmentCard.tsx",
+        "frontend/src/components/volunteer/UrgentBanner.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-20"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-build-an-impact-dashboard-page-with-1-animated-stat-cards-for-total-meals-rescued-total-kg-redistributed-co-saved-kg-2-1-estimate-and-total-people-fed-2-a-city-wise-breakdown-chart-bar-or-donut-showing-donations-by-maharashtra-city-mumbai-pune-nagpur-nashik-aurangabad-kolhapur-using-seeded-demo-data-3-a-top-donors-leaderboard-table-showing-donor-name-city-total-kg-donated-and-a-badge-for-top-contributor-4-an-ai-voice-summary-button-that-uses-web-speech-api-speechsynthesis-to-speak-a-summary-like-today-in-pune-312-meals-were-saved-helping-over-780-people-5-animated-chart-transitions-on-page-load",
+      "featureTitle": "Build an Impact Dashboard page with: (1) animated stat cards for total meals rescued, total kg redistributed, CO₂ saved (kg × 2.1 estimate), and total people fed; (2) a city-wise breakdown chart (bar or donut) showing donations by Maharashtra city (Mumbai, Pune, Nagpur, Nashik, Aurangabad, Kolhapur) using seeded demo data; (3) a top donors leaderboard table showing donor name, city, total kg donated, and a badge for top contributor; (4) an AI voice summary button that uses Web Speech API (speechSynthesis) to speak a summary like 'Today in Pune, 312 meals were saved, helping over 780 people.'; (5) animated chart transitions on page load.",
+      "files": [
+        "frontend/src/components/impact/AnimatedStatCard.tsx",
+        "frontend/src/components/impact/CityBreakdownChart.tsx",
+        "frontend/src/components/impact/LeaderboardTable.tsx",
+        "frontend/src/lib/speechUtils.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-21"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-emergency-mode-as-a-global-toggle-accessible-from-the-header-navigation-when-activated-1-the-entire-ui-shifts-to-a-red-accented-theme-red-header-red-card-borders-red-status-indicators-2-all-active-donations-are-visually-flagged-as-priority-override-3-a-persistent-full-width-red-banner-displays-hunger-emergency-mode-active-all-volunteers-notified-4-all-urgent-unsafe-donation-cards-in-the-ngo-and-volunteer-dashboards-float-to-the-top-of-their-lists-5-the-toggle-persists-in-react-state-for-the-session-deactivating-restores-the-normal-green-orange-theme",
+      "featureTitle": "Implement Emergency Mode as a global toggle accessible from the header navigation. When activated: (1) the entire UI shifts to a red-accented theme (red header, red card borders, red status indicators); (2) all active donations are visually flagged as Priority Override; (3) a persistent full-width red banner displays 'HUNGER EMERGENCY MODE ACTIVE – All volunteers notified'; (4) all Urgent/Unsafe donation cards in the NGO and Volunteer dashboards float to the top of their lists; (5) the toggle persists in React state for the session. Deactivating restores the normal green/orange theme.",
+      "files": [
+        "frontend/src/components/EmergencyBanner.tsx",
+        "frontend/src/hooks/useEmergencyMode.tsx",
+        "frontend/src/index.css"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-22"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-bonus-ux-features-1-multi-language-toggle-in-the-header-supporting-english-hindi-and-marathi-translate-all-static-ui-labels-button-text-and-headings-using-a-simple-i18n-string-map-2-dark-mode-toggle-in-the-header-that-switches-the-tailwind-theme-class-on-the-root-element-3-animated-loading-states-skeleton-screens-or-spinner-overlays-for-all-data-fetching-operations-4-real-time-toast-notifications-using-a-lightweight-toast-system-for-events-donation-submitted-ngo-matched-donation-accepted-rejected-volunteer-assigned",
+      "featureTitle": "Implement bonus UX features: (1) Multi-language toggle in the header supporting English, Hindi (हिंदी), and Marathi (मराठी) — translate all static UI labels, button text, and headings using a simple i18n string map; (2) Dark mode toggle in the header that switches the Tailwind theme class on the root element; (3) Animated loading states (skeleton screens or spinner overlays) for all data-fetching operations; (4) Real-time toast notifications (using a lightweight toast system) for events: donation submitted, NGO matched, donation accepted/rejected, volunteer assigned.",
+      "files": [
+        "frontend/src/components/ngo/NGODonationRequestsView.tsx",
+        "frontend/src/hooks/useLanguage.tsx",
+        "frontend/src/hooks/useToast.tsx",
+        "frontend/src/lib/translations.ts",
         "frontend/tailwind.config.js"
       ],
       "components": [
@@ -123,15 +188,17 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-13"
+        "REQ-23"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-generate-and-render-a-custom-app-logo-image-for-left2lift-a-stylized-food-sharing-icon-combining-a-plate-bowl-with-a-upward-arrow-or-hands-motif-in-green-and-orange-tones-for-use-in-the-top-navigation-bar-and-login-screen-render-it-as-a-static-asset-from-frontend-public-assets-generated",
-      "featureTitle": "Generate and render a custom app logo image for Left2Lift: a stylized food-sharing icon combining a plate/bowl with a upward arrow or hands motif, in green and orange tones, for use in the top navigation bar and login screen. Render it as a static asset from frontend/public/assets/generated.",
+      "featureId": "feature-apply-a-glassmorphism-forward-visual-redesign-across-all-pages-consistent-with-the-hackathon-theme-use-soft-green-16a34a-range-and-warm-orange-ea7c2b-range-as-primary-palette-frosted-glass-card-style-backdrop-filter-blur-semi-transparent-white-dark-backgrounds-with-border-smooth-css-transitions-on-hover-and-state-changes-no-framer-motion-dependency-required-css-transitions-acceptable-mobile-responsive-layout-with-flex-grid-floating-micro-interactions-on-buttons-subtle-scale-shadow-on-hover-food-location-and-impact-iconography-via-inline-svg-or-lucide-icons-throughout-all-pages-including-home-donate-food-ngo-dashboard-volunteer-dashboard-impact-dashboard-and-admin-panel",
+      "featureTitle": "Apply a glassmorphism-forward visual redesign across all pages consistent with the hackathon theme. Use: soft green (#16a34a range) and warm orange (#ea7c2b range) as primary palette; frosted glass card style (backdrop-filter blur, semi-transparent white/dark backgrounds with border); smooth CSS transitions on hover and state changes (no Framer Motion dependency required, CSS transitions acceptable); mobile-responsive layout with flex/grid; floating micro-interactions on buttons (subtle scale/shadow on hover); food, location, and impact iconography via inline SVG or Lucide icons throughout all pages including Home, Donate Food, NGO Dashboard, Volunteer Dashboard, Impact Dashboard, and Admin Panel.",
       "files": [
-        "frontend/src/components/Layout.tsx"
+        "frontend/src/index.css",
+        "frontend/src/pages/HomePage.tsx",
+        "frontend/tailwind.config.js"
       ],
       "components": [
         "authorization@4.0.0",
@@ -142,7 +209,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-14"
+        "REQ-24"
       ],
       "confidence": "high"
     }

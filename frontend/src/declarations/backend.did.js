@@ -17,6 +17,7 @@ export const AppUserRole = IDL.Variant({
   'ngo' : IDL.Null,
   'admin' : IDL.Null,
   'hotel' : IDL.Null,
+  'volunteer' : IDL.Null,
 });
 export const UserProfile = IDL.Record({
   'displayName' : IDL.Text,
@@ -51,6 +52,7 @@ export const Donation = IDL.Record({
   'id' : IDL.Nat,
   'status' : DonationStatus,
   'spoilageSafe' : IDL.Bool,
+  'city' : IDL.Text,
   'submittedAt' : Time,
   'pickupDeadline' : Time,
   'pickupAddress' : IDL.Text,
@@ -75,10 +77,25 @@ export const NGOProfile = IDL.Record({
   'currentDailyReceivedKg' : IDL.Float64,
   'locationAddress' : IDL.Text,
 });
+export const VolunteerProfile = IDL.Record({
+  'principal' : IDL.Principal,
+  'active' : IDL.Bool,
+  'city' : IDL.Text,
+  'name' : IDL.Text,
+  'availabilityStatus' : IDL.Text,
+});
+export const CitywiseStats = IDL.Record({
+  'city' : IDL.Text,
+  'totalKg' : IDL.Float64,
+  'donationCount' : IDL.Nat,
+});
 export const SystemAnalytics = IDL.Record({
+  'totalVolunteers' : IDL.Nat,
   'wasteReducedKg' : IDL.Float64,
+  'co2SavedKg' : IDL.Float64,
   'totalUsers' : IDL.Nat,
   'totalDonations' : IDL.Nat,
+  'citywiseStats' : IDL.Vec(CitywiseStats),
   'totalKgRedistributed' : IDL.Float64,
 });
 
@@ -101,35 +118,57 @@ export const idlService = IDL.Service({
   'getMyHotelProfile' : IDL.Func([], [IDL.Opt(HotelProfile)], ['query']),
   'getMyNGODonations' : IDL.Func([], [IDL.Vec(Donation)], ['query']),
   'getMyNGOProfile' : IDL.Func([], [IDL.Opt(NGOProfile)], ['query']),
+  'getMyVolunteerAssignments' : IDL.Func([], [IDL.Vec(Donation)], ['query']),
+  'getMyVolunteerProfile' : IDL.Func(
+      [],
+      [IDL.Opt(VolunteerProfile)],
+      ['query'],
+    ),
   'getNGOProfile' : IDL.Func([IDL.Principal], [IDL.Opt(NGOProfile)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'getVolunteerProfile' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(VolunteerProfile)],
+      ['query'],
+    ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'listAllDonations' : IDL.Func([], [IDL.Vec(Donation)], ['query']),
   'listAllUsers' : IDL.Func(
       [],
-      [IDL.Vec(HotelProfile), IDL.Vec(NGOProfile)],
+      [IDL.Vec(HotelProfile), IDL.Vec(NGOProfile), IDL.Vec(VolunteerProfile)],
       ['query'],
     ),
+  'listVolunteerAssignments' : IDL.Func([], [IDL.Vec(Donation)], ['query']),
   'registerHotel' : IDL.Func([IDL.Text], [], []),
   'registerNGO' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Vec(FoodType), IDL.Float64],
       [],
       [],
     ),
+  'registerVolunteer' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
   'rejectDonation' : IDL.Func([IDL.Nat], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'submitDonation' : IDL.Func(
-      [FoodType, IDL.Float64, IDL.Float64, StorageCondition, IDL.Text, Time],
+      [
+        FoodType,
+        IDL.Float64,
+        IDL.Float64,
+        StorageCondition,
+        IDL.Text,
+        Time,
+        IDL.Text,
+      ],
       [IDL.Bool, IDL.Opt(IDL.Principal)],
       [],
     ),
   'submitFeedback' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Text], [], []),
   'systemAnalytics' : IDL.Func([], [SystemAnalytics], ['query']),
   'updateDonationStatus' : IDL.Func([IDL.Nat, DonationStatus], [], []),
+  'updateVolunteerStatus' : IDL.Func([IDL.Bool, IDL.Text], [], []),
 });
 
 export const idlInitArgs = [];
@@ -144,6 +183,7 @@ export const idlFactory = ({ IDL }) => {
     'ngo' : IDL.Null,
     'admin' : IDL.Null,
     'hotel' : IDL.Null,
+    'volunteer' : IDL.Null,
   });
   const UserProfile = IDL.Record({
     'displayName' : IDL.Text,
@@ -178,6 +218,7 @@ export const idlFactory = ({ IDL }) => {
     'id' : IDL.Nat,
     'status' : DonationStatus,
     'spoilageSafe' : IDL.Bool,
+    'city' : IDL.Text,
     'submittedAt' : Time,
     'pickupDeadline' : Time,
     'pickupAddress' : IDL.Text,
@@ -202,10 +243,25 @@ export const idlFactory = ({ IDL }) => {
     'currentDailyReceivedKg' : IDL.Float64,
     'locationAddress' : IDL.Text,
   });
+  const VolunteerProfile = IDL.Record({
+    'principal' : IDL.Principal,
+    'active' : IDL.Bool,
+    'city' : IDL.Text,
+    'name' : IDL.Text,
+    'availabilityStatus' : IDL.Text,
+  });
+  const CitywiseStats = IDL.Record({
+    'city' : IDL.Text,
+    'totalKg' : IDL.Float64,
+    'donationCount' : IDL.Nat,
+  });
   const SystemAnalytics = IDL.Record({
+    'totalVolunteers' : IDL.Nat,
     'wasteReducedKg' : IDL.Float64,
+    'co2SavedKg' : IDL.Float64,
     'totalUsers' : IDL.Nat,
     'totalDonations' : IDL.Nat,
+    'citywiseStats' : IDL.Vec(CitywiseStats),
     'totalKgRedistributed' : IDL.Float64,
   });
   
@@ -232,6 +288,12 @@ export const idlFactory = ({ IDL }) => {
     'getMyHotelProfile' : IDL.Func([], [IDL.Opt(HotelProfile)], ['query']),
     'getMyNGODonations' : IDL.Func([], [IDL.Vec(Donation)], ['query']),
     'getMyNGOProfile' : IDL.Func([], [IDL.Opt(NGOProfile)], ['query']),
+    'getMyVolunteerAssignments' : IDL.Func([], [IDL.Vec(Donation)], ['query']),
+    'getMyVolunteerProfile' : IDL.Func(
+        [],
+        [IDL.Opt(VolunteerProfile)],
+        ['query'],
+      ),
     'getNGOProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(NGOProfile)],
@@ -242,29 +304,45 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'getVolunteerProfile' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(VolunteerProfile)],
+        ['query'],
+      ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'listAllDonations' : IDL.Func([], [IDL.Vec(Donation)], ['query']),
     'listAllUsers' : IDL.Func(
         [],
-        [IDL.Vec(HotelProfile), IDL.Vec(NGOProfile)],
+        [IDL.Vec(HotelProfile), IDL.Vec(NGOProfile), IDL.Vec(VolunteerProfile)],
         ['query'],
       ),
+    'listVolunteerAssignments' : IDL.Func([], [IDL.Vec(Donation)], ['query']),
     'registerHotel' : IDL.Func([IDL.Text], [], []),
     'registerNGO' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Vec(FoodType), IDL.Float64],
         [],
         [],
       ),
+    'registerVolunteer' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
     'rejectDonation' : IDL.Func([IDL.Nat], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'submitDonation' : IDL.Func(
-        [FoodType, IDL.Float64, IDL.Float64, StorageCondition, IDL.Text, Time],
+        [
+          FoodType,
+          IDL.Float64,
+          IDL.Float64,
+          StorageCondition,
+          IDL.Text,
+          Time,
+          IDL.Text,
+        ],
         [IDL.Bool, IDL.Opt(IDL.Principal)],
         [],
       ),
     'submitFeedback' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Text], [], []),
     'systemAnalytics' : IDL.Func([], [SystemAnalytics], ['query']),
     'updateDonationStatus' : IDL.Func([IDL.Nat, DonationStatus], [], []),
+    'updateVolunteerStatus' : IDL.Func([IDL.Bool, IDL.Text], [], []),
   });
 };
 

@@ -24,6 +24,8 @@ import type { Principal } from '@dfinity/principal';
 const FOOD_TYPES = Object.values(FoodType);
 const STORAGE_CONDITIONS = Object.values(StorageCondition);
 
+const CITIES = ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Aurangabad', 'Kolhapur'];
+
 interface SubmissionResult {
   spoilageSafe: boolean;
   matchedNGO: Principal | null;
@@ -36,6 +38,7 @@ export default function HotelDonationForm() {
   const [storageCondition, setStorageCondition] = useState<StorageCondition>(StorageCondition.refrigerated);
   const [pickupAddress, setPickupAddress] = useState('');
   const [pickupDeadline, setPickupDeadline] = useState('');
+  const [city, setCity] = useState('Mumbai');
   const [result, setResult] = useState<SubmissionResult | null>(null);
 
   const submitDonation = useSubmitDonation();
@@ -62,6 +65,7 @@ export default function HotelDonationForm() {
         storageCondition,
         pickupAddress,
         pickupDeadline: dateToNanoseconds(deadlineDate),
+        city,
       });
 
       setResult({ spoilageSafe, matchedNGO });
@@ -209,6 +213,26 @@ export default function HotelDonationForm() {
               </div>
             </div>
 
+            {/* City */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-primary-600" />
+                City
+              </Label>
+              <Select value={city} onValueChange={setCity}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CITIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Pickup Address */}
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5">
@@ -219,7 +243,7 @@ export default function HotelDonationForm() {
                 type="text"
                 value={pickupAddress}
                 onChange={(e) => setPickupAddress(e.target.value)}
-                placeholder="e.g. 123 Main Street, City, State 12345"
+                placeholder="e.g. 123 Main Street, Andheri East, Mumbai"
                 required
               />
             </div>

@@ -1,114 +1,150 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-24T14:26:38.834Z",
-  "summary": "The diff implements most of the required functionality across backend (Motoko) and frontend (React/TypeScript). The backend defines all required data models, spoilage logic, NGO matching, donation submission, feedback, admin endpoints, and role management. The frontend implements hotel, NGO, and admin panels with the green/orange theme. However, several specific requirements show gaps or concerns based on the available diff evidence.",
+  "generatedAt": "2026-02-24T16:33:06.948Z",
+  "summary": "The diff implements a substantial portion of the build request, covering backend volunteer support (REQ-25, REQ-26), frontend food safety engine (REQ-17), NGO matching engine (REQ-18 partially), donation components, NGO dashboard, volunteer dashboard components, impact dashboard components, emergency mode, language/theme/toast hooks, and glassmorphism styling. However, several pages and features are missing or only partially evidenced.",
   "missing_requirements": [
     {
-      "requirement": "Login screen must be fully static with no CSS transitions or keyframe animations. REQ-2 AC: Login screen has zero CSS transitions or keyframe animations.",
-      "reason": "The LoginScreen.tsx file was omitted from the diff due to file limits and cannot be verified. App.tsx uses animate-spin keyframe animation on loading spinners shown during initialization, raising concern about whether the login screen itself is fully static.",
+      "id": "REQ-15",
+      "requirement": "Build a Home page with animated hero section, tagline, glassmorphism styling, Maharashtra city selector, live impact counters, CTA buttons, and a voice mic button using Web Speech API.",
+      "reason": "No Home page file is present in added or modified files. The city selector hook (useCityContext.tsx) is added, but the actual Home page component with hero section, counters, CTA buttons, and voice mic button is not evidenced in the diff.",
       "evidence": [
-        "frontend/src/App.tsx"
+        "frontend/src/hooks/useCityContext.tsx"
       ]
     },
     {
-      "requirement": "REQ-1: Store all collections as stable vars using TrieMap or Array. Stable vars persist across upgrades.",
-      "reason": "The visible backend code uses 'let hotelsStore = Map.empty<...>()' and similar non-stable variable declarations without the 'stable var' keyword. This means state would be lost on canister upgrade, violating the persistence requirement.",
+      "id": "REQ-16",
+      "requirement": "Build a Donate Food page with full form, voice input toggle, and on-submit display of AI safety badge, NGO matching result card, and route preview section.",
+      "reason": "The HotelDonationForm.tsx is modified to add a city field but there is no dedicated Donate Food page file. Voice input toggle via Web Speech API for the donate form is not evidenced. Components exist but their integration into a standalone Donate Food page is not shown.",
       "evidence": [
-        "backend/main.mo"
+        "frontend/src/components/hotel/HotelDonationForm.tsx",
+        "frontend/src/components/donation/SafetyBadge.tsx",
+        "frontend/src/components/donation/NGOMatchCard.tsx",
+        "frontend/src/components/donation/RoutePreview.tsx"
       ]
     },
     {
-      "requirement": "REQ-10: Average rating per hotel is computed from stored feedback records and is accessible via hotel profile query.",
-      "reason": "The backend is truncated and it cannot be confirmed that the hotel profile query returns an average rating field. The HotelDashboard frontend does not display an average rating metric and the HotelProfile type shown in the diff does not include an averageRating field.",
+      "id": "REQ-18",
+      "requirement": "Implement Smart Nearest Trust Finder with all 7 hardcoded NGO coordinates, Haversine formula, and urgency score formula.",
+      "reason": "RoutePreview.tsx and MapPreviewCard.tsx import from ngoMatchingEngine, but this file is listed among the 4 omitted added files. Its contents including all 7 NGO coordinates, Haversine formula, and urgency score formula cannot be verified.",
+      "evidence": [
+        "frontend/src/components/donation/RoutePreview.tsx",
+        "frontend/src/components/ngo/MapPreviewCard.tsx"
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "requirement": "NGO Dashboard must include a donation history table with date, hotel name, food type, quantity, and status columns.",
+      "reason": "NGODonationRequestsView.tsx and NGOMetrics.tsx are added and appear largely complete, but a donation history table is not evidenced in the visible diff content.",
+      "evidence": [
+        "frontend/src/components/ngo/NGODonationRequestsView.tsx",
+        "frontend/src/components/ngo/NGOMetrics.tsx"
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "requirement": "Build a Volunteer Dashboard page accessible from navigation with assignment cards, smart assignment note, urgent banners, countdown timer, status update buttons, and realistic demo data.",
+      "reason": "AssignmentCard.tsx and UrgentBanner.tsx components are added, but no Volunteer Dashboard page file is evidenced. The actual page with routing, navigation link, and demo data population is not shown in the diff.",
+      "evidence": [
+        "frontend/src/components/volunteer/AssignmentCard.tsx",
+        "frontend/src/components/volunteer/UrgentBanner.tsx"
+      ]
+    },
+    {
+      "id": "REQ-21",
+      "requirement": "Build an Impact Dashboard page with animated stat cards, city-wise chart, leaderboard, and AI voice summary button using speechSynthesis.",
+      "reason": "Component files are added but no Impact Dashboard page file is evidenced. The AI voice summary button using speechSynthesis is not shown in any file in the diff.",
+      "evidence": [
+        "frontend/src/components/impact/AnimatedStatCard.tsx",
+        "frontend/src/components/impact/CityBreakdownChart.tsx",
+        "frontend/src/components/impact/LeaderboardTable.tsx"
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "requirement": "Emergency Mode global toggle visible in the header that shifts UI to red-accented theme including red header styling.",
+      "reason": "EmergencyBanner.tsx and useEmergencyMode.tsx are added, but the header toggle button and red header theme switching are not evidenced. No header or navigation file is modified or added in the diff.",
+      "evidence": [
+        "frontend/src/components/EmergencyBanner.tsx",
+        "frontend/src/hooks/useEmergencyMode.tsx"
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "requirement": "Multi-language toggle with Hindi and Marathi translations, dark mode toggle in header, skeleton loaders, and toast notifications for all specified events.",
+      "reason": "useLanguage.tsx, useToast.tsx, and useAppTheme.tsx are added, but the translations library is among the 4 omitted files and cannot be verified for Hindi/Marathi coverage. Header UI for language and dark mode toggles is not evidenced.",
+      "evidence": [
+        "frontend/src/hooks/useLanguage.tsx",
+        "frontend/src/hooks/useToast.tsx",
+        "frontend/src/hooks/useAppTheme.tsx"
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "requirement": "Glassmorphism redesign applied across all pages including Home, Donate Food, NGO Dashboard, Volunteer Dashboard, Impact Dashboard, and Admin Panel.",
+      "reason": "Glassmorphism CSS utilities are implemented in index.css and tailwind.config.js, but most page files are not shown in the diff so full application across all pages cannot be confirmed.",
+      "evidence": [
+        "frontend/src/index.css",
+        "frontend/tailwind.config.js"
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "requirement": "registerVolunteer update function, getMyVolunteerProfile query, and listVolunteerAssignments query must be implemented in backend.",
+      "reason": "backend/main.mo is truncated and these function implementations cannot be fully confirmed. The frontend query hook calls getMyVolunteerAssignments but REQ-25 specifies listVolunteerAssignments as the query name.",
       "evidence": [
         "backend/main.mo",
-        "frontend/src/components/hotel/HotelDashboard.tsx",
         "frontend/src/hooks/useQueries.ts"
-      ]
-    },
-    {
-      "id": "REQ-14",
-      "requirement": "Logo image served from frontend/public/assets/generated as a generated static asset.",
-      "reason": "The logo is referenced in code as /assets/generated/left2lift-logo.dim_256x256.png but no actual image file appears in the diff as an added file. The diff notes 11 files were omitted due to limits so the file may exist, but it cannot be confirmed.",
-      "evidence": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/components/RoleSelectionScreen.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Fish and Dairy added as selectable food types in the Hotel Donation Form submission UI.",
-      "reason": "REQ-5 specifies the hotel donation form food type enum as: Rice, Curry, Bread, Desserts, Vegetables, Other. Fish and Dairy are not in this list but are included in the FoodType enum and exposed via Object.values(FoodType) in the donation form.",
+      "description": "A separate backend/migration.mo file mapping old actor state to new state types.",
+      "reason": "The build request constrains all backend logic to a single Motoko actor (backend/main.mo) and does not request a separate migration module file.",
       "evidence": [
-        "frontend/src/components/hotel/HotelDonationForm.tsx",
-        "backend/main.mo"
+        "backend/migration.mo"
       ]
     },
     {
-      "description": "Two-step role selection flow with a separate displayName entry step and UserProfile.displayName field.",
-      "reason": "REQ-2 specifies role selection with three options (Hotel, NGO, Admin) but does not mention a displayName field or a separate name entry step. The RoleSelectionScreen implements a two-step flow requiring users to also enter a display name.",
+      "description": "project_state.json summary describes the project as using Firebase/Supabase, OpenAI API, Google Maps API, and Framer Motion.",
+      "reason": "All four of these technologies are explicitly listed as non-goals in the build request. Their presence in the project state summary is inaccurate relative to the spec.",
       "evidence": [
-        "frontend/src/components/RoleSelectionScreen.tsx",
-        "frontend/src/hooks/useQueries.ts"
-      ]
-    },
-    {
-      "description": "MixinAuthorization and AccessControl modules imported in backend actor with _initializeAccessControlWithSecret called from frontend.",
-      "reason": "The build spec requires all Motoko logic in a single main actor file with no external modules. The backend imports from authorization/MixinAuthorization and authorization/access-control which are separate files not part of the requested design.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/hooks/useActor.ts"
-      ]
-    },
-    {
-      "description": "Caffeine admin token integration via URL parameters passed to backend actor initialization.",
-      "reason": "The useActor hook reads a caffeineAdminToken secret parameter from URL params and passes it to _initializeAccessControlWithSecret. This platform-specific scaffolding was not requested in the build spec.",
-      "evidence": [
-        "frontend/src/hooks/useActor.ts"
-      ]
-    },
-    {
-      "description": "Estimated People Fed metric card displayed in AdminSystemAnalytics panel.",
-      "reason": "REQ-11 and REQ-12 specify four analytics metrics for the admin panel: total kg redistributed, total registered users, total donations submitted, and estimated waste reduced. An additional Estimated People Fed card is shown in the admin analytics view beyond what was requested.",
-      "evidence": [
-        "frontend/src/components/admin/AdminSystemAnalytics.tsx"
+        "project_state.json"
       ]
     }
   ],
   "confidence": 0.62,
   "changed_files": [
-    "all_files_summary.json",
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.css",
-    "frontend/index.html",
-    "frontend/src/App.tsx",
-    "frontend/src/components/Layout.tsx",
-    "frontend/src/components/RoleSelectionScreen.tsx",
-    "frontend/src/components/admin/AdminFoodSafetyMonitoring.tsx",
-    "frontend/src/components/admin/AdminSystemAnalytics.tsx",
-    "frontend/src/components/admin/AdminUserManagement.tsx",
-    "frontend/src/components/hotel/HotelDashboard.tsx",
+    "frontend/src/components/EmergencyBanner.tsx",
+    "frontend/src/components/donation/NGOMatchCard.tsx",
+    "frontend/src/components/donation/RoutePreview.tsx",
+    "frontend/src/components/donation/SafetyBadge.tsx",
     "frontend/src/components/hotel/HotelDonationForm.tsx",
-    "frontend/src/components/ngo/NGODashboard.tsx",
-    "frontend/src/components/ngo/NGODonationRequests.tsx",
-    "frontend/src/components/ngo/NGOFeedbackForm.tsx",
-    "frontend/src/components/ngo/NGOProfileForm.tsx",
-    "frontend/src/hooks/useActor.ts",
-    "frontend/src/hooks/useGetCallerUserProfile.ts",
-    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/components/impact/AnimatedStatCard.tsx",
+    "frontend/src/components/impact/CityBreakdownChart.tsx",
+    "frontend/src/components/impact/LeaderboardTable.tsx",
+    "frontend/src/components/ngo/MapPreviewCard.tsx",
+    "frontend/src/components/ngo/NGODonationRequestsView.tsx",
+    "frontend/src/components/ngo/NGOMetrics.tsx",
+    "frontend/src/components/volunteer/AssignmentCard.tsx",
+    "frontend/src/components/volunteer/UrgentBanner.tsx",
+    "frontend/src/hooks/useAppTheme.tsx",
+    "frontend/src/hooks/useCityContext.tsx",
+    "frontend/src/hooks/useCountdown.ts",
+    "frontend/src/hooks/useEmergencyMode.tsx",
+    "frontend/src/hooks/useLanguage.tsx",
     "frontend/src/hooks/useQueries.ts",
+    "frontend/src/hooks/useToast.tsx",
     "frontend/src/index.css",
-    "frontend/src/lib/utils.ts",
-    "frontend/src/main.tsx",
-    "frontend/src/pages/AdminPanel.tsx",
-    "frontend/src/pages/HotelPanel.tsx",
-    "frontend/src/pages/LoginScreen.tsx",
-    "frontend/src/pages/NGOPanel.tsx",
-    "frontend/src/utils/urlParams.ts",
+    "frontend/src/lib/foodSafetyEngine.ts",
+    "frontend/src/lib/ngoMatchingEngine.ts",
+    "frontend/src/lib/speechUtils.ts",
+    "frontend/src/lib/translations.ts",
+    "frontend/src/pages/HomePage.tsx",
     "frontend/tailwind.config.js",
     "project_state.json"
   ]

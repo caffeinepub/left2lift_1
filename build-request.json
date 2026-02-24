@@ -1,262 +1,319 @@
 {
   "kind": "build_request",
-  "title": "Left2Lift — Full Rebuild: AI-Powered Food Redistribution Platform",
-  "projectName": "Left2Lift",
+  "title": "From Waste to Plate – Maharashtra Edition: Full Hackathon Platform Build",
+  "projectName": "From Waste to Plate",
   "priority": "high",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Define the Motoko backend data models and actor state: Donation record (id, hotelPrincipal, matchedNGOPrincipal, foodType, quantityKg, timeSinceCooked, storageCondition, pickupAddress, pickupDeadline, status, spoilageSafe, submittedAt), NGOProfile (principal, orgName, locationAddress, foodTypePreferences, dailyCapacityKg, currentDailyReceivedKg, active), HotelProfile (principal, name, active), FeedbackRecord (donationId, ngoPrincipal, rating 1-5, comment), UserRole variant (Hotel, NGO, Admin). Store all collections as stable vars using TrieMap or Array. Expose query and update functions for CRUD on each entity.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "All data types compile without errors in Motoko",
-        "Stable vars persist across upgrades",
-        "Each entity is addressable by principal ID or record ID"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Implement Internet Identity authentication with first-login role selection. On first call from a new principal, the backend returns no role. The frontend then shows a role selection screen (Hotel, NGO, Admin) with no CSS animations or transitions. The selected role is stored in the backend linked to the caller's principal ID. Subsequent logins route directly to the role-specific panel based on the stored role.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "New principal sees role selection screen (static, no animations)",
-        "Role is persisted in backend after selection",
-        "Returning principal is routed to their role panel without role selection",
-        "Login screen has zero CSS transitions or keyframe animations"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Implement pure Motoko spoilage prediction logic. Rules: Refrigerated storage → safe up to 24 hours; Room Temperature → safe up to 6 hours; Hot → safe up to 4 hours. Additionally reduce threshold by 2 hours for highly perishable food types (Fish, Dairy). Return a Bool (spoilageSafe) computed from timeSinceCooked vs. threshold. This function is called internally when a donation is submitted.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Refrigerated non-perishable at 23h → safe; at 25h → unsafe",
-        "Room Temperature at 5h → safe; at 7h → unsafe",
-        "Hot at 3h → safe; at 5h → unsafe",
-        "Fish/Dairy thresholds are each reduced by 2 hours",
-        "No external API calls — pure Motoko logic only"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Implement pure Motoko NGO matching logic. When a donation is submitted and marked spoilageSafe=true, score all active NGO profiles by: (1) food type preference match (+10 points if NGO accepts this food type) and (2) remaining daily capacity (dailyCapacityKg - currentDailyReceivedKg >= donation quantityKg). Assign the highest-scoring NGO with sufficient capacity. Store the matched NGO's principal ID on the donation record and update the NGO's currentDailyReceivedKg. If no NGO matches, leave matchedNGOPrincipal empty and mark status as 'Unmatched'.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Matching runs automatically on donation submission when spoilageSafe=true",
-        "Matched NGO principal ID is stored on the donation record",
-        "NGO's currentDailyReceivedKg is incremented by donation quantity on match",
-        "No external API or ML service called — pure Motoko only",
-        "Unmatched donations are flagged with status 'Unmatched'"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Implement the Hotel food donation submission endpoint. Accept: foodType (enum: Rice, Curry, Bread, Desserts, Vegetables, Other), quantityKg (Float), timeSinceCooked (Float in hours), storageCondition (enum: Refrigerated, RoomTemperature, Hot), pickupAddress (Text), pickupDeadline (Int timestamp). On submission: save the record, run spoilage check (REQ-3), if safe run NGO matching (REQ-4), set initial status ('Pending', 'Matched', or 'Unmatched'), and return the spoilage result and matched NGO info to the caller.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Donation is saved with all required fields",
-        "Spoilage check runs synchronously and result is stored",
-        "NGO matching runs if spoilageSafe=true",
-        "Submission returns spoilageSafe bool and matched NGO name/principal",
-        "Only the submitting hotel's principal is associated with the donation"
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Build the Hotel Panel frontend with two views: (1) Donation Form — food type dropdown (Rice, Curry, Bread, Desserts, Vegetables, Other), quantity in kg (number input), time since cooked in hours (number input), storage condition dropdown (Refrigerated, Room Temperature, Hot), pickup address (plain text input, no lat/lng fields), pickup deadline (datetime input). On submit show spoilage result and matched NGO info in a result card. (2) Hotel Dashboard — show: total donations submitted, total kg donated, successful deliveries count, estimated people fed (total kg × 2.5), and a donation history table with columns: date, food type, quantity, status.",
+      "id": "REQ-15",
+      "text": "Build a Home page with: (1) an animated hero section displaying the tagline 'From waste to plate — powered by AI, delivered with dignity', glassmorphism card styling, and food/impact iconography; (2) a Maharashtra city selector (Mumbai, Pune, Nagpur, Nashik, Aurangabad, Kolhapur) that sets the active city context used throughout the app; (3) live impact counters animating up for Meals Saved, People Fed, and CO₂ Reduced (seeded with realistic demo values); (4) two CTA buttons — 'Donate Food' and 'I Am an NGO'; (5) a voice mic button using Web Speech API that accepts spoken donation intent and pre-fills the Donate Food form.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
+        ],
+        "quotes": [
+          "Animated hero section",
+          "Voice mic button",
+          "CTA buttons",
+          "Live counters: Meals Saved, People Fed, CO₂ Reduced",
+          "Maharashtra city selector"
         ]
       },
       "acceptanceCriteria": [
-        "All form fields are present as specified with correct input types",
-        "No lat/lng number inputs — pickup address is a single plain text field",
-        "Spoilage result and matched NGO are shown after submission",
-        "Dashboard metrics are computed from backend data",
-        "Donation history table shows date, food type, quantity, and status columns"
+        "Hero section renders with tagline and glassmorphism styling",
+        "City selector shows all 6 Maharashtra cities and persists selection in app state",
+        "Live counters animate from 0 to seeded demo values on page load",
+        "CTA buttons navigate to Donate Food page and NGO section",
+        "Voice mic button triggers Web Speech API and pre-fills form fields on recognition"
       ]
     },
     {
-      "id": "REQ-7",
-      "text": "Implement NGO profile registration/setup backend endpoint and frontend form. Fields: organization name (Text), location address (plain text string, no lat/lng), food type preferences (array of food type enums, multi-select), daily capacity in kg (Float). Store profile linked to NGO's principal ID. Provide a query endpoint to fetch the NGO's own profile.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "NGO can register and update their profile",
-        "Location is stored as plain text — no lat/lng fields",
-        "Food type preferences stored as an array",
-        "Profile is retrievable by the NGO's principal ID"
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "text": "Build the NGO Panel frontend with three views: (1) Donation Requests — query backend for donations where matchedNGOPrincipal equals the logged-in NGO's principal. Show cards with: food type, quantity, remaining safe hours (pickupDeadline - now), hotel name, pickup address. Provide Accept and Reject buttons that call backend update immediately and reflect the new status. Show both pending and accepted donations. (2) NGO Dashboard — total donations received, total kg received, people served (total kg × 2.5), donation history with date and hotel name columns. (3) Feedback form — after a donation is marked Completed, allow NGO to submit a 1–5 star rating and comment.",
+      "id": "REQ-16",
+      "text": "Build a Donate Food page with: (1) a form collecting food type (dropdown: Rice, Curry, Bread, Desserts, Vegetables, Fish, Dairy, Other), quantity in kg, time since cooked (hours), storage condition (Refrigerated, Room Temperature, Hot), pickup address (text with Maharashtra area suggestions from demo data — Andheri East, Dadar West, Bandra Kurla Complex, FC Road, Hinjewadi, Kothrud, Sitabuldi, Wardha Road, Dharampeth), and city selector; (2) voice input toggle that populates form fields via Web Speech API; (3) on submit: display an AI safety badge (Safe/Urgent/Unsafe) with remaining hours text (e.g. 'Safe for 4.5 more hours'), an animated NGO matching result card showing nearest NGO name, distance (km), and estimated pickup time (minutes), and a route preview section.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
+        ],
+        "quotes": [
+          "Donate Food",
+          "Auto-detect location",
+          "Voice input",
+          "After submit: AI safety badge, Animated NGO matching, Route preview"
         ]
       },
       "acceptanceCriteria": [
-        "Donation requests are filtered by NGO principal ID from backend",
-        "Remaining safe hours are calculated and displayed on each donation card",
-        "Accept/Reject update donation status in backend and reflect immediately in UI",
-        "Dashboard metrics are computed from backend data",
-        "Feedback form appears only for Completed donations"
+        "Form collects all required fields including city and pickup address",
+        "Voice input button activates Web Speech API and fills form fields",
+        "On submit, AI safety badge displays with color coding (green/yellow/red) and remaining hours",
+        "NGO match card shows NGO name, distance in km, and estimated pickup time",
+        "Route preview section renders after successful submission"
       ]
     },
     {
-      "id": "REQ-9",
-      "text": "Implement backend endpoints for NGO accept/reject and donation status management. Accept endpoint: updates donation status to 'Accepted', callable only by the matched NGO's principal. Reject endpoint: updates status to 'Rejected' and clears matchedNGOPrincipal so re-matching can occur. Admin status update endpoint: allows Admin principal to set any donation to any status (Pending, Matched, Unmatched, Accepted, InTransit, Completed, Rejected). All status changes must be visible to all roles on next fetch of that donation record.",
+      "id": "REQ-17",
+      "text": "Implement a frontend-only AI Food Safety Engine (pure TypeScript logic, no external API). Inputs: food type, quantity, time since cooked (hours), storage condition, and city (used to apply Maharashtra climate factor). Logic: base expiry thresholds — Refrigerated: 24h, Room Temperature: 6h, Hot: 4h. Reduce threshold by 2h for highly perishable types (Fish, Dairy). Apply a climate factor: cities with high summer temperatures (Mumbai, Nashik, Aurangabad, Nagpur) reduce threshold by an additional 0.5h. Compute remaining safe hours = threshold - timeSinceCooked. Classify status: Safe (>=3h remaining), Urgent (1–3h), Unsafe (<1h). Return status label, remaining hours string (e.g. 'Safe for 4.5 more hours'), and a color badge class.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "AI Food Safety Engine",
+          "Calculate expiry window",
+          "Apply Maharashtra climate factor",
+          "Mark food status: Safe, Urgent, Unsafe",
+          "Display: Safe for 4.5 more hours"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Refrigerated food returns safe for up to 24h (22h for Fish/Dairy)",
+        "Room Temperature food returns safe for up to 6h (4h for Fish/Dairy)",
+        "Hot food returns safe for up to 4h (2h for Fish/Dairy)",
+        "Mumbai/Nashik/Aurangabad/Nagpur reduce threshold by 0.5h as climate factor",
+        "Status badges render green for Safe, yellow for Urgent, red for Unsafe",
+        "Remaining hours string displays correctly"
+      ]
+    },
+    {
+      "id": "REQ-18",
+      "text": "Implement a Smart Nearest Trust Finder in the frontend using hardcoded Maharashtra NGO sample data with coordinates. NGO data: Mumbai — Robin Hood Army (Andheri, lat:19.1136, lng:72.8697), Roti Bank (Dadar, lat:19.0176, lng:72.8422), Feeding India (Bandra, lat:19.0544, lng:72.8402); Pune — Annadaan Foundation (Kothrud, lat:18.5018, lng:73.8077), Seva Sahayog (Shivajinagar, lat:18.5308, lng:73.8474); Nagpur — Bhojan Seva Trust (Dharampeth, lat:21.1458, lng:79.0882), Green Nagpur NGO (Sitabuldi, lat:21.1497, lng:79.0809). Logic: use the Haversine formula to compute distance from donor's city area coordinates to each NGO. Compute urgency score = (remainingHours × 0.4) + ((1/distanceKm) × 0.4) + (capacityScore × 0.2). Select the NGO with the highest urgency score. Display: 'Nearest trust found X.X km away – Estimated pickup in YY minutes' (estimate: distance / 0.5 km/min).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Smart Nearest Trust Finder",
+          "Haversine formula",
+          "Urgency Score = (Remaining Hours × Weight) + (Distance × Weight) + (NGO Capacity Score)",
+          "Nearest trust found 2.3 km away – Estimated pickup in 18 minutes"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All 7 hardcoded NGOs with correct city and coordinates are present",
+        "Haversine formula correctly calculates distance between two lat/lng points",
+        "Urgency score formula applies all three weighted components",
+        "Nearest NGO result shows name, distance (1 decimal), and estimated pickup minutes",
+        "Result updates when donation form city or food type changes"
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "text": "Build an enhanced NGO Dashboard page (replacing or extending the existing NGOPanel) with: (1) Donation Requests view showing cards with food type, quantity, food safety status badge (from AI engine), remaining safe hours countdown, hotel name, pickup address, distance from NGO, Accept/Reject buttons; (2) a priority badge on urgent/unsafe donations; (3) an embedded map preview placeholder showing a static route card (OpenStreetMap tile iframe or styled placeholder); (4) NGO metrics: total donations received, total kg, people served (kg × 2.5); (5) donation history table with date, hotel name, food type, quantity, status columns.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "NGO Dashboard",
+          "Incoming donation cards",
+          "Accept/Reject",
+          "Priority badge",
+          "Distance shown",
+          "Map preview"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Donation request cards show all fields including safety badge and remaining hours",
+        "Priority badge appears on Urgent and Unsafe donations",
+        "Accept/Reject buttons call backend and immediately update card status",
+        "Map preview section renders for accepted donations",
+        "NGO metrics show correct aggregated values"
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "text": "Build a Volunteer Dashboard page accessible from the main navigation. Show: (1) a list of pickup assignment cards, each with donor name/address, food type, quantity, urgency color coding (green/yellow/red border), a countdown timer showing time until food expires, and a route button; (2) a smart assignment note showing why this volunteer was selected (proximity-based); (3) urgent pickup notification banners at the top (e.g. 'Urgent food pickup near Andheri East. 15 meals expiring in 2 hours.') for Urgent/Unsafe donations; (4) a status update button (Mark as Picked Up, Mark as Delivered). Populate with realistic demo assignment data for Mumbai/Pune/Nagpur areas.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Volunteer Dashboard",
+          "Pickup assignments",
+          "Route",
+          "Countdown timer",
+          "Urgency color",
+          "Urgent food pickup near Andheri East. 15 meals expiring in 2 hours."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Volunteer dashboard page is accessible from navigation",
+        "Assignment cards show all fields with urgency color borders",
+        "Countdown timer updates in real-time showing time remaining until expiry",
+        "Urgent notification banners appear for Urgent/Unsafe assignments",
+        "Demo data includes realistic Maharashtra addresses"
+      ]
+    },
+    {
+      "id": "REQ-21",
+      "text": "Build an Impact Dashboard page with: (1) animated stat cards for total meals rescued, total kg redistributed, CO₂ saved (kg × 2.1 estimate), and total people fed; (2) a city-wise breakdown chart (bar or donut) showing donations by Maharashtra city (Mumbai, Pune, Nagpur, Nashik, Aurangabad, Kolhapur) using seeded demo data; (3) a top donors leaderboard table showing donor name, city, total kg donated, and a badge for top contributor; (4) an AI voice summary button that uses Web Speech API (speechSynthesis) to speak a summary like 'Today in Pune, 312 meals were saved, helping over 780 people.'; (5) animated chart transitions on page load.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Impact Dashboard",
+          "Animated charts: Total meals rescued, City-wise breakdown, CO₂ saved",
+          "Top donors leaderboard",
+          "AI voice summary: Today in Pune, 312 meals were saved."
+        ]
+      },
+      "acceptanceCriteria": [
+        "All four stat cards animate from 0 to target value on mount",
+        "City-wise chart renders with data for all 6 Maharashtra cities",
+        "Leaderboard table shows at least 5 demo donor entries with correct columns",
+        "Voice summary button triggers speechSynthesis with city-specific text",
+        "Charts use green/orange color palette consistent with app theme"
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "text": "Implement Emergency Mode as a global toggle accessible from the header navigation. When activated: (1) the entire UI shifts to a red-accented theme (red header, red card borders, red status indicators); (2) all active donations are visually flagged as Priority Override; (3) a persistent full-width red banner displays 'HUNGER EMERGENCY MODE ACTIVE – All volunteers notified'; (4) all Urgent/Unsafe donation cards in the NGO and Volunteer dashboards float to the top of their lists; (5) the toggle persists in React state for the session. Deactivating restores the normal green/orange theme.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Emergency Mode",
+          "Toggle: Activate Hunger Emergency Mode",
+          "When active: UI turns red, Priority override, Broadcast to all volunteers"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Emergency mode toggle button is visible in the header",
+        "Activating switches header and card borders to red accent theme",
+        "Full-width red banner appears when mode is active",
+        "Urgent/Unsafe donation cards sort to top in dashboard views",
+        "Deactivating restores green/orange theme"
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "text": "Implement bonus UX features: (1) Multi-language toggle in the header supporting English, Hindi (हिंदी), and Marathi (मराठी) — translate all static UI labels, button text, and headings using a simple i18n string map; (2) Dark mode toggle in the header that switches the Tailwind theme class on the root element; (3) Animated loading states (skeleton screens or spinner overlays) for all data-fetching operations; (4) Real-time toast notifications (using a lightweight toast system) for events: donation submitted, NGO matched, donation accepted/rejected, volunteer assigned.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Multi-language toggle (English / Hindi / Marathi)",
+          "Dark mode",
+          "Animated loading states",
+          "Real-time toast notifications"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Language toggle switches all static UI text to the selected language",
+        "Hindi and Marathi translations are provided for all main labels and buttons",
+        "Dark mode toggle applies dark background/light text theme across all pages",
+        "Skeleton loaders appear during backend query loading states",
+        "Toast notifications appear for donation submission, NGO match, accept/reject events"
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "text": "Apply a glassmorphism-forward visual redesign across all pages consistent with the hackathon theme. Use: soft green (#16a34a range) and warm orange (#ea7c2b range) as primary palette; frosted glass card style (backdrop-filter blur, semi-transparent white/dark backgrounds with border); smooth CSS transitions on hover and state changes (no Framer Motion dependency required, CSS transitions acceptable); mobile-responsive layout with flex/grid; floating micro-interactions on buttons (subtle scale/shadow on hover); food, location, and impact iconography via inline SVG or Lucide icons throughout all pages including Home, Donate Food, NGO Dashboard, Volunteer Dashboard, Impact Dashboard, and Admin Panel.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Soft green + orange",
+          "Glassmorphism cards",
+          "Smooth transitions",
+          "Modern startup look",
+          "Mobile responsive",
+          "Floating micro-interactions",
+          "Beautiful iconography"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All cards use backdrop-filter blur with semi-transparent backgrounds",
+        "Green and orange palette is applied consistently across all pages",
+        "Hover states on buttons show scale and shadow transitions",
+        "Layout is responsive and usable on mobile viewports (320px+)",
+        "Food and impact icons are present on all major sections"
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "text": "Add Volunteer role support to the backend. Extend the UserRole variant to include a Volunteer option. Create a VolunteerProfile type with fields: principal (Principal), name (Text), city (Text), active (Bool), availabilityStatus (Text). Add a registerVolunteer update function callable by Volunteer-role principals. Add a query to fetch the caller's own volunteer profile. Add a listVolunteerAssignments query that returns all Pending/Matched donations in the volunteer's city. Store volunteer profiles in a stable TrieMap keyed by principal.",
       "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
+        ],
+        "quotes": [
+          "Volunteer drivers",
+          "Volunteer Dashboard",
+          "Volunteer Smart Assignment"
         ]
       },
       "acceptanceCriteria": [
-        "Only matched NGO can accept/reject their assigned donation",
-        "Status field is the single source of truth read by all roles",
-        "Admin can update any donation status",
-        "Rejection clears matchedNGOPrincipal from the record"
+        "UserRole variant includes Volunteer",
+        "VolunteerProfile type has all specified fields",
+        "registerVolunteer stores profile linked to caller principal",
+        "getMyVolunteerProfile query returns the caller's profile",
+        "listVolunteerAssignments returns donations filtered by volunteer's city"
       ]
     },
     {
-      "id": "REQ-10",
-      "text": "Implement the feedback system in the backend. NGO can submit a FeedbackRecord (donationId, rating 1–5, comment) for donations with status 'Completed'. Store all feedback records. Provide a query to get average rating for a hotel (average of all feedback ratings on that hotel's donations). Expose this average rating in hotel profile queries.",
+      "id": "REQ-26",
+      "text": "Extend the backend systemAnalytics endpoint to also return: totalVolunteers (count of active volunteer profiles), citywiseStats (array of {city: Text, totalKg: Float, donationCount: Nat} for each Maharashtra city), and co2SavedKg (totalKgRedistributed × 2.1). Store city on each donation record (Text field) so city-wise aggregation is possible. Update the donation submission endpoint to accept and store the donor's city.",
       "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
+        ],
+        "quotes": [
+          "City-wise breakdown",
+          "CO₂ saved",
+          "systemAnalytics"
         ]
       },
       "acceptanceCriteria": [
-        "Feedback can only be submitted for Completed donations",
-        "Rating is an integer 1–5; comment is text",
-        "Average rating per hotel is computed from stored feedback records",
-        "Average rating is accessible via hotel profile query"
-      ]
-    },
-    {
-      "id": "REQ-11",
-      "text": "Build the Admin Panel frontend with three views: (1) User Management — list all registered hotels and NGOs with their name, role, and an active/deactivate toggle button that calls backend to set active=false on the user profile. (2) Food Safety Monitoring — list all donations with columns: hotel name, food type, quantity, storageCondition, timeSinceCooked, spoilageSafe flag (highlight unsafe rows), current status, and admin status-update dropdown. (3) System Analytics — display: total kg redistributed, total registered users (hotels + NGOs), total donations submitted, estimated waste reduced (kg of spoiled or unmatched donations).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin can deactivate any hotel or NGO user",
-        "Food safety table shows spoilage flag with visual highlight for unsafe donations",
-        "Admin can change donation status from the monitoring table",
-        "Analytics figures are fetched from backend aggregation endpoints"
-      ]
-    },
-    {
-      "id": "REQ-12",
-      "text": "Implement Admin backend endpoints: (1) listAllUsers — returns all hotel and NGO profiles with active status. (2) deactivateUser(principal) — sets active=false on the specified profile. (3) listAllDonations — returns all donation records with hotel name, NGO name if matched, and spoilage flag. (4) systemAnalytics — returns aggregate stats: totalKgRedistributed (sum of kg of Completed donations), totalUsers, totalDonations, wasteReducedKg (sum of kg of Unmatched + Rejected + spoilageSafe=false donations). Access restricted to Admin role principal.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "All admin endpoints verify caller has Admin role",
-        "listAllDonations includes spoilage flag and matched NGO name",
-        "systemAnalytics returns all four aggregate metrics",
-        "deactivateUser prevents deactivated hotels/NGOs from appearing in matching"
-      ]
-    },
-    {
-      "id": "REQ-13",
-      "text": "Apply a consistent green and orange visual theme across all panels. Use deep green (#1a6b3c or similar) and warm orange (#e87722 or similar) as primary palette with white/light gray backgrounds. Use card-based layouts for all data displays. Typography should be clean and readable (sans-serif). Use food, location, and impact iconography (from a bundled icon set or inline SVG). No blue or purple anywhere in the UI. Apply theme consistently across login, role selection, hotel panel, NGO panel, and admin panel.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "No blue or purple color values appear anywhere in the UI",
-        "Primary actions use green; secondary highlights use orange",
-        "All data views use card-based layouts",
-        "Icons relate to food, location, or impact themes",
-        "Theme is consistent across all panels and the login/role selection screen"
-      ]
-    },
-    {
-      "id": "REQ-14",
-      "text": "Generate and render a custom app logo image for Left2Lift: a stylized food-sharing icon combining a plate/bowl with a upward arrow or hands motif, in green and orange tones, for use in the top navigation bar and login screen. Render it as a static asset from frontend/public/assets/generated.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Logo image is rendered in the nav bar and login screen",
-        "Image is served from frontend/public/assets/generated",
-        "Logo uses green and orange tones consistent with the app theme"
+        "Donation records store a city Text field",
+        "submitDonation accepts city as a parameter",
+        "systemAnalytics returns totalVolunteers, citywiseStats array, and co2SavedKg",
+        "citywiseStats contains entries for each city present in donation data",
+        "co2SavedKg = totalKgRedistributed × 2.1"
       ]
     }
   ],
   "constraints": [
-    "No Google Maps API — no Places Autocomplete, Directions API, or Maps Embed. All location fields are plain text strings only.",
-    "No external ML or AI API calls — all spoilage and matching logic is pure Motoko with no fetch calls to external services.",
-    "No volunteer role — zero volunteer-related code, panels, routes, or data fields anywhere in the codebase.",
-    "No lat/lng number inputs — all location/address fields are plain text strings.",
-    "NGO donation panel must filter by matchedNGOPrincipal stored on the donation record.",
-    "Donation status is a single shared field read by all roles (hotel, NGO, admin).",
-    "Login screen must be fully static with no CSS transitions or keyframe animations.",
-    "All Motoko logic must reside in a single main actor file (backend/main.mo).",
-    "Do not edit any file listed in frontend.immutablePaths."
+    "All backend logic must remain in a single Motoko actor (backend/main.mo).",
+    "No external AI APIs (OpenAI) — all AI logic (spoilage, matching, scoring) must be implemented as deterministic TypeScript (frontend) or Motoko (backend) rule-based logic.",
+    "No Google Maps API integration — use OpenStreetMap iframe embeds or styled static map placeholders for route previews.",
+    "No WebSocket or real-time push — toast notifications and updates must be driven by React Query polling or mutation callbacks.",
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "Haversine distance calculation must be implemented in frontend TypeScript using the hardcoded NGO coordinate data specified in REQ-18."
   ],
   "nonGoals": [
-    "Volunteer or delivery role — explicitly excluded",
-    "Real-time push notifications or WebSockets",
-    "External maps, geolocation, or GPS features",
-    "Third-party AI/ML APIs (OpenAI, etc.)",
-    "Email or SMS notifications",
-    "Multi-canister or microservices backend architecture",
-    "Mobile app or React Native implementation"
+    "No integration with Firebase, Supabase, or any external database.",
+    "No OpenAI API or any third-party LLM API calls.",
+    "No Google Maps JavaScript API (use OpenStreetMap or static placeholders only).",
+    "No GPS/geolocation API (use city-based coordinate lookup from predefined Maharashtra city center coordinates).",
+    "No SMS, push notification, or email service integrations.",
+    "No Framer Motion dependency (CSS transitions are sufficient for animations).",
+    "No actual real-time data — all counters and charts use seeded demo data derived from backend queries or hardcoded demo values."
   ],
   "imageRequirements": {
     "required": [
-      "Left2Lift app logo — stylized bowl or plate with an upward arrow and two open hands motif in deep green and warm orange on a transparent background (left2lift-logo.dim_256x256.png)"
+      "From Waste to Plate hero banner illustration: a warm-toned scene showing hands passing a food tray over a Maharashtra cityscape silhouette with green fields and orange sunset sky, modern flat illustration style (hero-banner.dim_1200x400.png)",
+      "Impact dashboard background graphic: abstract green and orange wavy lines with food bowl and leaf motifs suggesting sustainability and abundance (impact-bg.dim_1200x400.png)",
+      "Volunteer badge icon: a stylized running figure carrying a food box, in green and orange tones, flat icon style (volunteer-icon.dim_128x128.png)",
+      "Emergency mode warning illustration: a red alert siren with a plate and fork symbol, flat vector style in red and dark tones (emergency-icon.dim_128x128.png)"
     ],
-    "edits": []
+    "edits": [
+      "Update the existing app logo to add 'Maharashtra Edition' subtitle text below the plate/arrow motif (logo.dim_256x256.png > logo-maharashtra.dim_256x256.png)"
+    ]
   }
 }
