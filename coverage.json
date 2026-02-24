@@ -1,0 +1,300 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-24T14:26:38.837Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 14,
+    "implemented": 7,
+    "items": [
+      {
+        "id": "REQ-1",
+        "summary": "Define the Motoko backend data models and actor state: Donation record (id, hotelPrincipal, matchedNGOPrincipal, foodType, quantityKg, timeSinceCooked, storageCondition, pickupAddress, pickupDeadline, status, spoilageSafe, submittedAt), NGOProfile (principal, orgName, locationAddress, foodTypePreferences, dailyCapacityKg, currentDailyReceivedKg, active), HotelProfile (principal, name, active), FeedbackRecord (donationId, ngoPrincipal, rating 1-5, comment), UserRole variant (Hotel, NGO, Admin). Store all collections as stable vars using TrieMap or Array. Expose query and update functions for CRUD on each entity.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-10",
+        "summary": "Implement the feedback system in the backend. NGO can submit a FeedbackRecord (donationId, rating 1–5, comment) for donations with status 'Completed'. Store all feedback records. Provide a query to get average rating for a hotel (average of all feedback ratings on that hotel's donations). Expose this average rating in hotel profile queries.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-11",
+        "summary": "Build the Admin Panel frontend with three views: (1) User Management — list all registered hotels and NGOs with their name, role, and an active/deactivate toggle button that calls backend to set active=false on the user profile. (2) Food Safety Monitoring — list all donations with columns: hotel name, food type, quantity, storageCondition, timeSinceCooked, spoilageSafe flag (highlight unsafe rows), current status, and admin status-update dropdown. (3) System Analytics — display: total kg redistributed, total registered users (hotels + NGOs), total donations submitted, estimated waste reduced (kg of spoiled or unmatched donations).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/admin/AdminUserManagement.tsx",
+          "frontend/src/components/admin/AdminFoodSafetyMonitoring.tsx",
+          "frontend/src/components/admin/AdminSystemAnalytics.tsx",
+          "frontend/src/pages/AdminPanel.tsx",
+          "frontend/src/hooks/useListAllUsers.ts",
+          "frontend/src/hooks/useListAllDonations.ts",
+          "frontend/src/hooks/useDeactivateUser.ts",
+          "frontend/src/hooks/useUpdateDonationStatus.ts",
+          "frontend/src/hooks/useSystemAnalytics.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/admin/AdminUserManagement.tsx",
+          "frontend/src/components/admin/AdminFoodSafetyMonitoring.tsx",
+          "frontend/src/components/admin/AdminSystemAnalytics.tsx",
+          "frontend/src/pages/AdminPanel.tsx"
+        ]
+      },
+      {
+        "id": "REQ-12",
+        "summary": "Implement Admin backend endpoints: (1) listAllUsers — returns all hotel and NGO profiles with active status. (2) deactivateUser(principal) — sets active=false on the specified profile. (3) listAllDonations — returns all donation records with hotel name, NGO name if matched, and spoilage flag. (4) systemAnalytics — returns aggregate stats: totalKgRedistributed (sum of kg of Completed donations), totalUsers, totalDonations, wasteReducedKg (sum of kg of Unmatched + Rejected + spoilageSafe=false donations). Access restricted to Admin role principal.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-13",
+        "summary": "Apply a consistent green and orange visual theme across all panels. Use deep green (#1a6b3c or similar) and warm orange (#e87722 or similar) as primary palette with white/light gray backgrounds. Use card-based layouts for all data displays. Typography should be clean and readable (sans-serif). Use food, location, and impact iconography (from a bundled icon set or inline SVG). No blue or purple anywhere in the UI. Apply theme consistently across login, role selection, hotel panel, NGO panel, and admin panel.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/index.css",
+          "frontend/tailwind.config.js",
+          "frontend/src/components/Layout.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/index.css",
+          "frontend/tailwind.config.js",
+          "frontend/src/components/Layout.tsx"
+        ]
+      },
+      {
+        "id": "REQ-14",
+        "summary": "Generate and render a custom app logo image for Left2Lift: a stylized food-sharing icon combining a plate/bowl with a upward arrow or hands motif, in green and orange tones, for use in the top navigation bar and login screen. Render it as a static asset from frontend/public/assets/generated.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/Layout.tsx",
+          "frontend/src/components/LoginButton.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/Layout.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Implement Internet Identity authentication with first-login role selection. On first call from a new principal, the backend returns no role. The frontend then shows a role selection screen (Hotel, NGO, Admin) with no CSS animations or transitions. The selected role is stored in the backend linked to the caller's principal ID. Subsequent logins route directly to the role-specific panel based on the stored role.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/LoginButton.tsx",
+          "frontend/src/components/RoleSelectionScreen.tsx",
+          "frontend/src/hooks/useGetCallerUserProfile.ts",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/RoleSelectionScreen.tsx",
+          "frontend/src/hooks/useGetCallerUserProfile.ts",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Implement pure Motoko spoilage prediction logic. Rules: Refrigerated storage → safe up to 24 hours; Room Temperature → safe up to 6 hours; Hot → safe up to 4 hours. Additionally reduce threshold by 2 hours for highly perishable food types (Fish, Dairy). Return a Bool (spoilageSafe) computed from timeSinceCooked vs. threshold. This function is called internally when a donation is submitted.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Implement pure Motoko NGO matching logic. When a donation is submitted and marked spoilageSafe=true, score all active NGO profiles by: (1) food type preference match (+10 points if NGO accepts this food type) and (2) remaining daily capacity (dailyCapacityKg - currentDailyReceivedKg >= donation quantityKg). Assign the highest-scoring NGO with sufficient capacity. Store the matched NGO's principal ID on the donation record and update the NGO's currentDailyReceivedKg. If no NGO matches, leave matchedNGOPrincipal empty and mark status as 'Unmatched'.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Implement the Hotel food donation submission endpoint. Accept: foodType (enum: Rice, Curry, Bread, Desserts, Vegetables, Other), quantityKg (Float), timeSinceCooked (Float in hours), storageCondition (enum: Refrigerated, RoomTemperature, Hot), pickupAddress (Text), pickupDeadline (Int timestamp). On submission: save the record, run spoilage check (REQ-3), if safe run NGO matching (REQ-4), set initial status ('Pending', 'Matched', or 'Unmatched'), and return the spoilage result and matched NGO info to the caller.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-6",
+        "summary": "Build the Hotel Panel frontend with two views: (1) Donation Form — food type dropdown (Rice, Curry, Bread, Desserts, Vegetables, Other), quantity in kg (number input), time since cooked in hours (number input), storage condition dropdown (Refrigerated, Room Temperature, Hot), pickup address (plain text input, no lat/lng fields), pickup deadline (datetime input). On submit show spoilage result and matched NGO info in a result card. (2) Hotel Dashboard — show: total donations submitted, total kg donated, successful deliveries count, estimated people fed (total kg × 2.5), and a donation history table with columns: date, food type, quantity, status.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/hotel/HotelDonationForm.tsx",
+          "frontend/src/components/hotel/HotelDashboard.tsx",
+          "frontend/src/pages/HotelPanel.tsx",
+          "frontend/src/hooks/useSubmitDonation.ts",
+          "frontend/src/hooks/useGetMyHotelDonations.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/hotel/HotelDonationForm.tsx",
+          "frontend/src/components/hotel/HotelDashboard.tsx",
+          "frontend/src/pages/HotelPanel.tsx"
+        ]
+      },
+      {
+        "id": "REQ-7",
+        "summary": "Implement NGO profile registration/setup backend endpoint and frontend form. Fields: organization name (Text), location address (plain text string, no lat/lng), food type preferences (array of food type enums, multi-select), daily capacity in kg (Float). Store profile linked to NGO's principal ID. Provide a query endpoint to fetch the NGO's own profile.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/ngo/NGOProfileForm.tsx",
+          "frontend/src/hooks/useRegisterNGO.ts",
+          "frontend/src/hooks/useGetMyNGOProfile.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/ngo/NGOProfileForm.tsx"
+        ]
+      },
+      {
+        "id": "REQ-8",
+        "summary": "Build the NGO Panel frontend with three views: (1) Donation Requests — query backend for donations where matchedNGOPrincipal equals the logged-in NGO's principal. Show cards with: food type, quantity, remaining safe hours (pickupDeadline - now), hotel name, pickup address. Provide Accept and Reject buttons that call backend update immediately and reflect the new status. Show both pending and accepted donations. (2) NGO Dashboard — total donations received, total kg received, people served (total kg × 2.5), donation history with date and hotel name columns. (3) Feedback form — after a donation is marked Completed, allow NGO to submit a 1–5 star rating and comment.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/ngo/NGODonationRequests.tsx",
+          "frontend/src/components/ngo/NGODashboard.tsx",
+          "frontend/src/components/ngo/NGOFeedbackForm.tsx",
+          "frontend/src/pages/NGOPanel.tsx",
+          "frontend/src/hooks/useGetMyNGODonations.ts",
+          "frontend/src/hooks/useAcceptDonation.ts",
+          "frontend/src/hooks/useRejectDonation.ts",
+          "frontend/src/hooks/useSubmitFeedback.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/ngo/NGODonationRequests.tsx",
+          "frontend/src/components/ngo/NGODashboard.tsx",
+          "frontend/src/components/ngo/NGOFeedbackForm.tsx",
+          "frontend/src/pages/NGOPanel.tsx"
+        ]
+      },
+      {
+        "id": "REQ-9",
+        "summary": "Implement backend endpoints for NGO accept/reject and donation status management. Accept endpoint: updates donation status to 'Accepted', callable only by the matched NGO's principal. Reject endpoint: updates status to 'Rejected' and clears matchedNGOPrincipal so re-matching can occur. Admin status update endpoint: allows Admin principal to set any donation to any status (Pending, Matched, Unmatched, Accepted, InTransit, Completed, Rejected). All status changes must be visible to all roles on next fetch of that donation record.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/authorization/MixinAuthorization.mo",
+    "backend/authorization/access-control.mo",
+    "backend/main.mo",
+    "build-request.json",
+    "build-template/Dockerfile",
+    "build-template/LICENSE",
+    "build-template/README.md",
+    "build-template/deploy.sh",
+    "build-template/icp.yaml",
+    "build-template/package.json",
+    "build-template/pnpm-lock.yaml",
+    "build-template/pnpm-workspace.yaml",
+    "build-template/scripts/prune-unused-images.js",
+    "build-template/scripts/resize-images.js",
+    "build-template/src/backend/canister.yaml",
+    "build-template/src/backend/system-idl/aaaaa-aa.did",
+    "build-template/src/frontend/canister.yaml",
+    "build-template/src/frontend/components.json",
+    "build-template/src/frontend/env.json",
+    "build-template/src/frontend/eslint-rules/no-bigint-in-query-keys.js",
+    "build-template/src/frontend/eslint-rules/require-internet-identity-provider.js",
+    "build-template/src/frontend/eslint.config.js",
+    "build-template/src/frontend/package.json",
+    "build-template/src/frontend/postcss.config.js",
+    "build-template/src/frontend/src/components/ui/accordion.tsx",
+    "build-template/src/frontend/src/components/ui/alert-dialog.tsx",
+    "build-template/src/frontend/src/components/ui/alert.tsx",
+    "build-template/src/frontend/src/components/ui/aspect-ratio.tsx",
+    "build-template/src/frontend/src/components/ui/avatar.tsx",
+    "build-template/src/frontend/src/components/ui/badge.tsx",
+    "build-template/src/frontend/src/components/ui/breadcrumb.tsx",
+    "build-template/src/frontend/src/components/ui/button.tsx",
+    "build-template/src/frontend/src/components/ui/calendar.tsx",
+    "build-template/src/frontend/src/components/ui/card.tsx",
+    "build-template/src/frontend/src/components/ui/carousel.tsx",
+    "build-template/src/frontend/src/components/ui/chart.tsx",
+    "build-template/src/frontend/src/components/ui/checkbox.tsx",
+    "build-template/src/frontend/src/components/ui/collapsible.tsx",
+    "build-template/src/frontend/src/components/ui/command.tsx",
+    "build-template/src/frontend/src/components/ui/context-menu.tsx",
+    "build-template/src/frontend/src/components/ui/dialog.tsx",
+    "build-template/src/frontend/src/components/ui/drawer.tsx",
+    "build-template/src/frontend/src/components/ui/dropdown-menu.tsx",
+    "build-template/src/frontend/src/components/ui/form.tsx",
+    "build-template/src/frontend/src/components/ui/hover-card.tsx",
+    "build-template/src/frontend/src/components/ui/input-otp.tsx",
+    "build-template/src/frontend/src/components/ui/input.tsx",
+    "build-template/src/frontend/src/components/ui/label.tsx",
+    "build-template/src/frontend/src/components/ui/menubar.tsx",
+    "build-template/src/frontend/src/components/ui/navigation-menu.tsx",
+    "build-template/src/frontend/src/components/ui/pagination.tsx",
+    "build-template/src/frontend/src/components/ui/popover.tsx",
+    "build-template/src/frontend/src/components/ui/progress.tsx",
+    "build-template/src/frontend/src/components/ui/radio-group.tsx",
+    "build-template/src/frontend/src/components/ui/resizable.tsx",
+    "build-template/src/frontend/src/components/ui/scroll-area.tsx",
+    "build-template/src/frontend/src/components/ui/select.tsx",
+    "build-template/src/frontend/src/components/ui/separator.tsx",
+    "build-template/src/frontend/src/components/ui/sheet.tsx",
+    "build-template/src/frontend/src/components/ui/sidebar.tsx",
+    "build-template/src/frontend/src/components/ui/skeleton.tsx",
+    "build-template/src/frontend/src/components/ui/slider.tsx",
+    "build-template/src/frontend/src/components/ui/sonner.tsx",
+    "build-template/src/frontend/src/components/ui/switch.tsx",
+    "build-template/src/frontend/src/components/ui/table.tsx",
+    "build-template/src/frontend/src/components/ui/tabs.tsx",
+    "build-template/src/frontend/src/components/ui/textarea.tsx",
+    "build-template/src/frontend/src/components/ui/toggle-group.tsx",
+    "build-template/src/frontend/src/components/ui/toggle.tsx",
+    "build-template/src/frontend/src/components/ui/tooltip.tsx",
+    "build-template/src/frontend/src/hooks/use-mobile.tsx",
+    "build-template/src/frontend/src/lib/utils.ts",
+    "build-template/src/frontend/tsconfig.json",
+    "build-template/src/frontend/vite.config.js",
+    "build-template/tsconfig.json",
+    "caffeine.lock.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/index.css",
+    "frontend/index.html",
+    "frontend/public/assets/generated/left2lift-logo.dim_256x256.png",
+    "frontend/src/App.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/Layout.tsx",
+    "frontend/src/components/RoleSelectionScreen.tsx",
+    "frontend/src/components/admin/AdminFoodSafetyMonitoring.tsx",
+    "frontend/src/components/admin/AdminSystemAnalytics.tsx",
+    "frontend/src/components/admin/AdminUserManagement.tsx",
+    "frontend/src/components/hotel/HotelDashboard.tsx",
+    "frontend/src/components/hotel/HotelDonationForm.tsx",
+    "frontend/src/components/ngo/NGODashboard.tsx",
+    "frontend/src/components/ngo/NGODonationRequests.tsx",
+    "frontend/src/components/ngo/NGOFeedbackForm.tsx",
+    "frontend/src/components/ngo/NGOProfileForm.tsx",
+    "frontend/src/config.ts",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useActor.ts",
+    "frontend/src/hooks/useGetCallerUserProfile.ts",
+    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/index.css",
+    "frontend/src/lib/utils.ts",
+    "frontend/src/main.tsx",
+    "frontend/src/pages/AdminPanel.tsx",
+    "frontend/src/pages/HotelPanel.tsx",
+    "frontend/src/pages/LoginScreen.tsx",
+    "frontend/src/pages/NGOPanel.tsx",
+    "frontend/src/ui-summary.json",
+    "frontend/src/utils/StorageClient.ts",
+    "frontend/src/utils/urlParams.ts",
+    "frontend/tailwind.config.js",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

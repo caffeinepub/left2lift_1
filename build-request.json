@@ -1,0 +1,262 @@
+{
+  "kind": "build_request",
+  "title": "Left2Lift — Full Rebuild: AI-Powered Food Redistribution Platform",
+  "projectName": "Left2Lift",
+  "priority": "high",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Define the Motoko backend data models and actor state: Donation record (id, hotelPrincipal, matchedNGOPrincipal, foodType, quantityKg, timeSinceCooked, storageCondition, pickupAddress, pickupDeadline, status, spoilageSafe, submittedAt), NGOProfile (principal, orgName, locationAddress, foodTypePreferences, dailyCapacityKg, currentDailyReceivedKg, active), HotelProfile (principal, name, active), FeedbackRecord (donationId, ngoPrincipal, rating 1-5, comment), UserRole variant (Hotel, NGO, Admin). Store all collections as stable vars using TrieMap or Array. Expose query and update functions for CRUD on each entity.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All data types compile without errors in Motoko",
+        "Stable vars persist across upgrades",
+        "Each entity is addressable by principal ID or record ID"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Implement Internet Identity authentication with first-login role selection. On first call from a new principal, the backend returns no role. The frontend then shows a role selection screen (Hotel, NGO, Admin) with no CSS animations or transitions. The selected role is stored in the backend linked to the caller's principal ID. Subsequent logins route directly to the role-specific panel based on the stored role.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "New principal sees role selection screen (static, no animations)",
+        "Role is persisted in backend after selection",
+        "Returning principal is routed to their role panel without role selection",
+        "Login screen has zero CSS transitions or keyframe animations"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Implement pure Motoko spoilage prediction logic. Rules: Refrigerated storage → safe up to 24 hours; Room Temperature → safe up to 6 hours; Hot → safe up to 4 hours. Additionally reduce threshold by 2 hours for highly perishable food types (Fish, Dairy). Return a Bool (spoilageSafe) computed from timeSinceCooked vs. threshold. This function is called internally when a donation is submitted.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Refrigerated non-perishable at 23h → safe; at 25h → unsafe",
+        "Room Temperature at 5h → safe; at 7h → unsafe",
+        "Hot at 3h → safe; at 5h → unsafe",
+        "Fish/Dairy thresholds are each reduced by 2 hours",
+        "No external API calls — pure Motoko logic only"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Implement pure Motoko NGO matching logic. When a donation is submitted and marked spoilageSafe=true, score all active NGO profiles by: (1) food type preference match (+10 points if NGO accepts this food type) and (2) remaining daily capacity (dailyCapacityKg - currentDailyReceivedKg >= donation quantityKg). Assign the highest-scoring NGO with sufficient capacity. Store the matched NGO's principal ID on the donation record and update the NGO's currentDailyReceivedKg. If no NGO matches, leave matchedNGOPrincipal empty and mark status as 'Unmatched'.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Matching runs automatically on donation submission when spoilageSafe=true",
+        "Matched NGO principal ID is stored on the donation record",
+        "NGO's currentDailyReceivedKg is incremented by donation quantity on match",
+        "No external API or ML service called — pure Motoko only",
+        "Unmatched donations are flagged with status 'Unmatched'"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Implement the Hotel food donation submission endpoint. Accept: foodType (enum: Rice, Curry, Bread, Desserts, Vegetables, Other), quantityKg (Float), timeSinceCooked (Float in hours), storageCondition (enum: Refrigerated, RoomTemperature, Hot), pickupAddress (Text), pickupDeadline (Int timestamp). On submission: save the record, run spoilage check (REQ-3), if safe run NGO matching (REQ-4), set initial status ('Pending', 'Matched', or 'Unmatched'), and return the spoilage result and matched NGO info to the caller.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Donation is saved with all required fields",
+        "Spoilage check runs synchronously and result is stored",
+        "NGO matching runs if spoilageSafe=true",
+        "Submission returns spoilageSafe bool and matched NGO name/principal",
+        "Only the submitting hotel's principal is associated with the donation"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Build the Hotel Panel frontend with two views: (1) Donation Form — food type dropdown (Rice, Curry, Bread, Desserts, Vegetables, Other), quantity in kg (number input), time since cooked in hours (number input), storage condition dropdown (Refrigerated, Room Temperature, Hot), pickup address (plain text input, no lat/lng fields), pickup deadline (datetime input). On submit show spoilage result and matched NGO info in a result card. (2) Hotel Dashboard — show: total donations submitted, total kg donated, successful deliveries count, estimated people fed (total kg × 2.5), and a donation history table with columns: date, food type, quantity, status.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All form fields are present as specified with correct input types",
+        "No lat/lng number inputs — pickup address is a single plain text field",
+        "Spoilage result and matched NGO are shown after submission",
+        "Dashboard metrics are computed from backend data",
+        "Donation history table shows date, food type, quantity, and status columns"
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Implement NGO profile registration/setup backend endpoint and frontend form. Fields: organization name (Text), location address (plain text string, no lat/lng), food type preferences (array of food type enums, multi-select), daily capacity in kg (Float). Store profile linked to NGO's principal ID. Provide a query endpoint to fetch the NGO's own profile.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "NGO can register and update their profile",
+        "Location is stored as plain text — no lat/lng fields",
+        "Food type preferences stored as an array",
+        "Profile is retrievable by the NGO's principal ID"
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Build the NGO Panel frontend with three views: (1) Donation Requests — query backend for donations where matchedNGOPrincipal equals the logged-in NGO's principal. Show cards with: food type, quantity, remaining safe hours (pickupDeadline - now), hotel name, pickup address. Provide Accept and Reject buttons that call backend update immediately and reflect the new status. Show both pending and accepted donations. (2) NGO Dashboard — total donations received, total kg received, people served (total kg × 2.5), donation history with date and hotel name columns. (3) Feedback form — after a donation is marked Completed, allow NGO to submit a 1–5 star rating and comment.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Donation requests are filtered by NGO principal ID from backend",
+        "Remaining safe hours are calculated and displayed on each donation card",
+        "Accept/Reject update donation status in backend and reflect immediately in UI",
+        "Dashboard metrics are computed from backend data",
+        "Feedback form appears only for Completed donations"
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Implement backend endpoints for NGO accept/reject and donation status management. Accept endpoint: updates donation status to 'Accepted', callable only by the matched NGO's principal. Reject endpoint: updates status to 'Rejected' and clears matchedNGOPrincipal so re-matching can occur. Admin status update endpoint: allows Admin principal to set any donation to any status (Pending, Matched, Unmatched, Accepted, InTransit, Completed, Rejected). All status changes must be visible to all roles on next fetch of that donation record.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Only matched NGO can accept/reject their assigned donation",
+        "Status field is the single source of truth read by all roles",
+        "Admin can update any donation status",
+        "Rejection clears matchedNGOPrincipal from the record"
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Implement the feedback system in the backend. NGO can submit a FeedbackRecord (donationId, rating 1–5, comment) for donations with status 'Completed'. Store all feedback records. Provide a query to get average rating for a hotel (average of all feedback ratings on that hotel's donations). Expose this average rating in hotel profile queries.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Feedback can only be submitted for Completed donations",
+        "Rating is an integer 1–5; comment is text",
+        "Average rating per hotel is computed from stored feedback records",
+        "Average rating is accessible via hotel profile query"
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Build the Admin Panel frontend with three views: (1) User Management — list all registered hotels and NGOs with their name, role, and an active/deactivate toggle button that calls backend to set active=false on the user profile. (2) Food Safety Monitoring — list all donations with columns: hotel name, food type, quantity, storageCondition, timeSinceCooked, spoilageSafe flag (highlight unsafe rows), current status, and admin status-update dropdown. (3) System Analytics — display: total kg redistributed, total registered users (hotels + NGOs), total donations submitted, estimated waste reduced (kg of spoiled or unmatched donations).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin can deactivate any hotel or NGO user",
+        "Food safety table shows spoilage flag with visual highlight for unsafe donations",
+        "Admin can change donation status from the monitoring table",
+        "Analytics figures are fetched from backend aggregation endpoints"
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Implement Admin backend endpoints: (1) listAllUsers — returns all hotel and NGO profiles with active status. (2) deactivateUser(principal) — sets active=false on the specified profile. (3) listAllDonations — returns all donation records with hotel name, NGO name if matched, and spoilage flag. (4) systemAnalytics — returns aggregate stats: totalKgRedistributed (sum of kg of Completed donations), totalUsers, totalDonations, wasteReducedKg (sum of kg of Unmatched + Rejected + spoilageSafe=false donations). Access restricted to Admin role principal.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All admin endpoints verify caller has Admin role",
+        "listAllDonations includes spoilage flag and matched NGO name",
+        "systemAnalytics returns all four aggregate metrics",
+        "deactivateUser prevents deactivated hotels/NGOs from appearing in matching"
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "text": "Apply a consistent green and orange visual theme across all panels. Use deep green (#1a6b3c or similar) and warm orange (#e87722 or similar) as primary palette with white/light gray backgrounds. Use card-based layouts for all data displays. Typography should be clean and readable (sans-serif). Use food, location, and impact iconography (from a bundled icon set or inline SVG). No blue or purple anywhere in the UI. Apply theme consistently across login, role selection, hotel panel, NGO panel, and admin panel.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "No blue or purple color values appear anywhere in the UI",
+        "Primary actions use green; secondary highlights use orange",
+        "All data views use card-based layouts",
+        "Icons relate to food, location, or impact themes",
+        "Theme is consistent across all panels and the login/role selection screen"
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "text": "Generate and render a custom app logo image for Left2Lift: a stylized food-sharing icon combining a plate/bowl with a upward arrow or hands motif, in green and orange tones, for use in the top navigation bar and login screen. Render it as a static asset from frontend/public/assets/generated.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Logo image is rendered in the nav bar and login screen",
+        "Image is served from frontend/public/assets/generated",
+        "Logo uses green and orange tones consistent with the app theme"
+      ]
+    }
+  ],
+  "constraints": [
+    "No Google Maps API — no Places Autocomplete, Directions API, or Maps Embed. All location fields are plain text strings only.",
+    "No external ML or AI API calls — all spoilage and matching logic is pure Motoko with no fetch calls to external services.",
+    "No volunteer role — zero volunteer-related code, panels, routes, or data fields anywhere in the codebase.",
+    "No lat/lng number inputs — all location/address fields are plain text strings.",
+    "NGO donation panel must filter by matchedNGOPrincipal stored on the donation record.",
+    "Donation status is a single shared field read by all roles (hotel, NGO, admin).",
+    "Login screen must be fully static with no CSS transitions or keyframe animations.",
+    "All Motoko logic must reside in a single main actor file (backend/main.mo).",
+    "Do not edit any file listed in frontend.immutablePaths."
+  ],
+  "nonGoals": [
+    "Volunteer or delivery role — explicitly excluded",
+    "Real-time push notifications or WebSockets",
+    "External maps, geolocation, or GPS features",
+    "Third-party AI/ML APIs (OpenAI, etc.)",
+    "Email or SMS notifications",
+    "Multi-canister or microservices backend architecture",
+    "Mobile app or React Native implementation"
+  ],
+  "imageRequirements": {
+    "required": [
+      "Left2Lift app logo — stylized bowl or plate with an upward arrow and two open hands motif in deep green and warm orange on a transparent background (left2lift-logo.dim_256x256.png)"
+    ],
+    "edits": []
+  }
+}

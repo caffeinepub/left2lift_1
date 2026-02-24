@@ -1,0 +1,115 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-24T14:26:38.834Z",
+  "summary": "The diff implements most of the required functionality across backend (Motoko) and frontend (React/TypeScript). The backend defines all required data models, spoilage logic, NGO matching, donation submission, feedback, admin endpoints, and role management. The frontend implements hotel, NGO, and admin panels with the green/orange theme. However, several specific requirements show gaps or concerns based on the available diff evidence.",
+  "missing_requirements": [
+    {
+      "requirement": "Login screen must be fully static with no CSS transitions or keyframe animations. REQ-2 AC: Login screen has zero CSS transitions or keyframe animations.",
+      "reason": "The LoginScreen.tsx file was omitted from the diff due to file limits and cannot be verified. App.tsx uses animate-spin keyframe animation on loading spinners shown during initialization, raising concern about whether the login screen itself is fully static.",
+      "evidence": [
+        "frontend/src/App.tsx"
+      ]
+    },
+    {
+      "requirement": "REQ-1: Store all collections as stable vars using TrieMap or Array. Stable vars persist across upgrades.",
+      "reason": "The visible backend code uses 'let hotelsStore = Map.empty<...>()' and similar non-stable variable declarations without the 'stable var' keyword. This means state would be lost on canister upgrade, violating the persistence requirement.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "requirement": "REQ-10: Average rating per hotel is computed from stored feedback records and is accessible via hotel profile query.",
+      "reason": "The backend is truncated and it cannot be confirmed that the hotel profile query returns an average rating field. The HotelDashboard frontend does not display an average rating metric and the HotelProfile type shown in the diff does not include an averageRating field.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/components/hotel/HotelDashboard.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "requirement": "Logo image served from frontend/public/assets/generated as a generated static asset.",
+      "reason": "The logo is referenced in code as /assets/generated/left2lift-logo.dim_256x256.png but no actual image file appears in the diff as an added file. The diff notes 11 files were omitted due to limits so the file may exist, but it cannot be confirmed.",
+      "evidence": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/Layout.tsx",
+        "frontend/src/components/RoleSelectionScreen.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Fish and Dairy added as selectable food types in the Hotel Donation Form submission UI.",
+      "reason": "REQ-5 specifies the hotel donation form food type enum as: Rice, Curry, Bread, Desserts, Vegetables, Other. Fish and Dairy are not in this list but are included in the FoodType enum and exposed via Object.values(FoodType) in the donation form.",
+      "evidence": [
+        "frontend/src/components/hotel/HotelDonationForm.tsx",
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Two-step role selection flow with a separate displayName entry step and UserProfile.displayName field.",
+      "reason": "REQ-2 specifies role selection with three options (Hotel, NGO, Admin) but does not mention a displayName field or a separate name entry step. The RoleSelectionScreen implements a two-step flow requiring users to also enter a display name.",
+      "evidence": [
+        "frontend/src/components/RoleSelectionScreen.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "description": "MixinAuthorization and AccessControl modules imported in backend actor with _initializeAccessControlWithSecret called from frontend.",
+      "reason": "The build spec requires all Motoko logic in a single main actor file with no external modules. The backend imports from authorization/MixinAuthorization and authorization/access-control which are separate files not part of the requested design.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/hooks/useActor.ts"
+      ]
+    },
+    {
+      "description": "Caffeine admin token integration via URL parameters passed to backend actor initialization.",
+      "reason": "The useActor hook reads a caffeineAdminToken secret parameter from URL params and passes it to _initializeAccessControlWithSecret. This platform-specific scaffolding was not requested in the build spec.",
+      "evidence": [
+        "frontend/src/hooks/useActor.ts"
+      ]
+    },
+    {
+      "description": "Estimated People Fed metric card displayed in AdminSystemAnalytics panel.",
+      "reason": "REQ-11 and REQ-12 specify four analytics metrics for the admin panel: total kg redistributed, total registered users, total donations submitted, and estimated waste reduced. An additional Estimated People Fed card is shown in the admin analytics view beyond what was requested.",
+      "evidence": [
+        "frontend/src/components/admin/AdminSystemAnalytics.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.62,
+  "changed_files": [
+    "all_files_summary.json",
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/index.css",
+    "frontend/index.html",
+    "frontend/src/App.tsx",
+    "frontend/src/components/Layout.tsx",
+    "frontend/src/components/RoleSelectionScreen.tsx",
+    "frontend/src/components/admin/AdminFoodSafetyMonitoring.tsx",
+    "frontend/src/components/admin/AdminSystemAnalytics.tsx",
+    "frontend/src/components/admin/AdminUserManagement.tsx",
+    "frontend/src/components/hotel/HotelDashboard.tsx",
+    "frontend/src/components/hotel/HotelDonationForm.tsx",
+    "frontend/src/components/ngo/NGODashboard.tsx",
+    "frontend/src/components/ngo/NGODonationRequests.tsx",
+    "frontend/src/components/ngo/NGOFeedbackForm.tsx",
+    "frontend/src/components/ngo/NGOProfileForm.tsx",
+    "frontend/src/hooks/useActor.ts",
+    "frontend/src/hooks/useGetCallerUserProfile.ts",
+    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/index.css",
+    "frontend/src/lib/utils.ts",
+    "frontend/src/main.tsx",
+    "frontend/src/pages/AdminPanel.tsx",
+    "frontend/src/pages/HotelPanel.tsx",
+    "frontend/src/pages/LoginScreen.tsx",
+    "frontend/src/pages/NGOPanel.tsx",
+    "frontend/src/utils/urlParams.ts",
+    "frontend/tailwind.config.js",
+    "project_state.json"
+  ]
+}

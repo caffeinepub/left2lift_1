@@ -1,0 +1,150 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-implement-internet-identity-authentication-with-first-login-role-selection-on-first-call-from-a-new-principal-the-backend-returns-no-role-the-frontend-then-shows-a-role-selection-screen-hotel-ngo-admin-with-no-css-animations-or-transitions-the-selected-role-is-stored-in-the-backend-linked-to-the-caller-s-principal-id-subsequent-logins-route-directly-to-the-role-specific-panel-based-on-the-stored-role",
+      "featureTitle": "Implement Internet Identity authentication with first-login role selection. On first call from a new principal, the backend returns no role. The frontend then shows a role selection screen (Hotel, NGO, Admin) with no CSS animations or transitions. The selected role is stored in the backend linked to the caller's principal ID. Subsequent logins route directly to the role-specific panel based on the stored role.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/RoleSelectionScreen.tsx",
+        "frontend/src/hooks/useGetCallerUserProfile.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-build-the-hotel-panel-frontend-with-two-views-1-donation-form-food-type-dropdown-rice-curry-bread-desserts-vegetables-other-quantity-in-kg-number-input-time-since-cooked-in-hours-number-input-storage-condition-dropdown-refrigerated-room-temperature-hot-pickup-address-plain-text-input-no-lat-lng-fields-pickup-deadline-datetime-input-on-submit-show-spoilage-result-and-matched-ngo-info-in-a-result-card-2-hotel-dashboard-show-total-donations-submitted-total-kg-donated-successful-deliveries-count-estimated-people-fed-total-kg-2-5-and-a-donation-history-table-with-columns-date-food-type-quantity-status",
+      "featureTitle": "Build the Hotel Panel frontend with two views: (1) Donation Form — food type dropdown (Rice, Curry, Bread, Desserts, Vegetables, Other), quantity in kg (number input), time since cooked in hours (number input), storage condition dropdown (Refrigerated, Room Temperature, Hot), pickup address (plain text input, no lat/lng fields), pickup deadline (datetime input). On submit show spoilage result and matched NGO info in a result card. (2) Hotel Dashboard — show: total donations submitted, total kg donated, successful deliveries count, estimated people fed (total kg × 2.5), and a donation history table with columns: date, food type, quantity, status.",
+      "files": [
+        "frontend/src/components/hotel/HotelDashboard.tsx",
+        "frontend/src/components/hotel/HotelDonationForm.tsx",
+        "frontend/src/pages/HotelPanel.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-ngo-profile-registration-setup-backend-endpoint-and-frontend-form-fields-organization-name-text-location-address-plain-text-string-no-lat-lng-food-type-preferences-array-of-food-type-enums-multi-select-daily-capacity-in-kg-float-store-profile-linked-to-ngo-s-principal-id-provide-a-query-endpoint-to-fetch-the-ngo-s-own-profile",
+      "featureTitle": "Implement NGO profile registration/setup backend endpoint and frontend form. Fields: organization name (Text), location address (plain text string, no lat/lng), food type preferences (array of food type enums, multi-select), daily capacity in kg (Float). Store profile linked to NGO's principal ID. Provide a query endpoint to fetch the NGO's own profile.",
+      "files": [
+        "frontend/src/components/ngo/NGOProfileForm.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-build-the-ngo-panel-frontend-with-three-views-1-donation-requests-query-backend-for-donations-where-matchedngoprincipal-equals-the-logged-in-ngo-s-principal-show-cards-with-food-type-quantity-remaining-safe-hours-pickupdeadline-now-hotel-name-pickup-address-provide-accept-and-reject-buttons-that-call-backend-update-immediately-and-reflect-the-new-status-show-both-pending-and-accepted-donations-2-ngo-dashboard-total-donations-received-total-kg-received-people-served-total-kg-2-5-donation-history-with-date-and-hotel-name-columns-3-feedback-form-after-a-donation-is-marked-completed-allow-ngo-to-submit-a-1-5-star-rating-and-comment",
+      "featureTitle": "Build the NGO Panel frontend with three views: (1) Donation Requests — query backend for donations where matchedNGOPrincipal equals the logged-in NGO's principal. Show cards with: food type, quantity, remaining safe hours (pickupDeadline - now), hotel name, pickup address. Provide Accept and Reject buttons that call backend update immediately and reflect the new status. Show both pending and accepted donations. (2) NGO Dashboard — total donations received, total kg received, people served (total kg × 2.5), donation history with date and hotel name columns. (3) Feedback form — after a donation is marked Completed, allow NGO to submit a 1–5 star rating and comment.",
+      "files": [
+        "frontend/src/components/ngo/NGODashboard.tsx",
+        "frontend/src/components/ngo/NGODonationRequests.tsx",
+        "frontend/src/components/ngo/NGOFeedbackForm.tsx",
+        "frontend/src/pages/NGOPanel.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-build-the-admin-panel-frontend-with-three-views-1-user-management-list-all-registered-hotels-and-ngos-with-their-name-role-and-an-active-deactivate-toggle-button-that-calls-backend-to-set-active-false-on-the-user-profile-2-food-safety-monitoring-list-all-donations-with-columns-hotel-name-food-type-quantity-storagecondition-timesincecooked-spoilagesafe-flag-highlight-unsafe-rows-current-status-and-admin-status-update-dropdown-3-system-analytics-display-total-kg-redistributed-total-registered-users-hotels-ngos-total-donations-submitted-estimated-waste-reduced-kg-of-spoiled-or-unmatched-donations",
+      "featureTitle": "Build the Admin Panel frontend with three views: (1) User Management — list all registered hotels and NGOs with their name, role, and an active/deactivate toggle button that calls backend to set active=false on the user profile. (2) Food Safety Monitoring — list all donations with columns: hotel name, food type, quantity, storageCondition, timeSinceCooked, spoilageSafe flag (highlight unsafe rows), current status, and admin status-update dropdown. (3) System Analytics — display: total kg redistributed, total registered users (hotels + NGOs), total donations submitted, estimated waste reduced (kg of spoiled or unmatched donations).",
+      "files": [
+        "frontend/src/components/admin/AdminFoodSafetyMonitoring.tsx",
+        "frontend/src/components/admin/AdminSystemAnalytics.tsx",
+        "frontend/src/components/admin/AdminUserManagement.tsx",
+        "frontend/src/pages/AdminPanel.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-apply-a-consistent-green-and-orange-visual-theme-across-all-panels-use-deep-green-1a6b3c-or-similar-and-warm-orange-e87722-or-similar-as-primary-palette-with-white-light-gray-backgrounds-use-card-based-layouts-for-all-data-displays-typography-should-be-clean-and-readable-sans-serif-use-food-location-and-impact-iconography-from-a-bundled-icon-set-or-inline-svg-no-blue-or-purple-anywhere-in-the-ui-apply-theme-consistently-across-login-role-selection-hotel-panel-ngo-panel-and-admin-panel",
+      "featureTitle": "Apply a consistent green and orange visual theme across all panels. Use deep green (#1a6b3c or similar) and warm orange (#e87722 or similar) as primary palette with white/light gray backgrounds. Use card-based layouts for all data displays. Typography should be clean and readable (sans-serif). Use food, location, and impact iconography (from a bundled icon set or inline SVG). No blue or purple anywhere in the UI. Apply theme consistently across login, role selection, hotel panel, NGO panel, and admin panel.",
+      "files": [
+        "frontend/src/components/Layout.tsx",
+        "frontend/src/index.css",
+        "frontend/tailwind.config.js"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-13"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-generate-and-render-a-custom-app-logo-image-for-left2lift-a-stylized-food-sharing-icon-combining-a-plate-bowl-with-a-upward-arrow-or-hands-motif-in-green-and-orange-tones-for-use-in-the-top-navigation-bar-and-login-screen-render-it-as-a-static-asset-from-frontend-public-assets-generated",
+      "featureTitle": "Generate and render a custom app logo image for Left2Lift: a stylized food-sharing icon combining a plate/bowl with a upward arrow or hands motif, in green and orange tones, for use in the top navigation bar and login screen. Render it as a static asset from frontend/public/assets/generated.",
+      "files": [
+        "frontend/src/components/Layout.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-14"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "frontend/src/pages/LoginScreen.tsx": "Static login screen with hero section and login card; fixes the React hooks-in-handler error by destructuring `clear` at the top level of the component instead of calling `useInternetIdentity` inside the event handler, and replaces all `flex-shrink-0` with `shrink-0`.",
+  "frontend/src/components/hotel/HotelDonationForm.tsx": "Hotel food donation submission form with food type, storage condition, quantity, time since cooked, pickup address, and deadline fields; replaces `flex-shrink-0` with `shrink-0` on result card icons.",
+  "frontend/src/components/ngo/NGODonationRequests.tsx": "NGO donation requests view showing active and past donations with accept/reject actions and inline feedback form; replaces all `flex-shrink-0` occurrences with `shrink-0`.",
+  "frontend/src/components/admin/AdminSystemAnalytics.tsx": "Admin analytics dashboard showing total kg redistributed, users, donations, waste reduced, and estimated people fed; replaces `flex-shrink-0` with `shrink-0` on the people-fed card icon.",
+  "frontend/src/components/RoleSelectionScreen.tsx": "First-time role selection screen with two steps (role choice and name entry); fixes the TypeScript error by storing icon components as `React.ComponentType` references instead of JSX nodes, eliminating the need for `React.cloneElement`.",
+  "frontend/src/components/admin/AdminUserManagement.tsx": "Admin user management panel listing all registered hotels and NGOs in separate tables with active status badges and deactivate buttons that call the backend.",
+  "frontend/src/components/admin/AdminFoodSafetyMonitoring.tsx": "Admin food safety monitoring table showing all donations with spoilage flags (unsafe rows highlighted), storage details, and an inline status-update dropdown that calls `updateDonationStatus` on the backend."
+}
